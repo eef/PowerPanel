@@ -6,4 +6,4 @@
 *.so
 TCPclientdroid/bin/
 TCPclientdroid/gen/
-TCPserver/build/
+TCPserver/dist/
