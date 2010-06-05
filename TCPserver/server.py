@@ -1,5 +1,6 @@
 import os
 import socket
+import SocketServer
 
 class  AssHandler(object):
     def handle_shutdown(self, options):
@@ -24,28 +25,20 @@ class  AssHandler(object):
             raise Exception("Cannot find handler %r" % type)
         return func(*args, **kwargs)
 
-class AssComms():
-    def receive(self, options = {}):
+class AssComms(SocketServer.BaseRequestHandler):
+    def handle(self, options = {}):
         handler = AssHandler()
-        HOST = '192.168.0.106'
-        PORT = 2501
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((HOST, PORT))
-        s.listen(1)
-        conn, addr = s.accept()
-
-        print "Connection from",addr
-
-        while 1:
-            data = conn.recv(1024)
-            print "bogla"
-            res = handler.handle(data,{'test':'test_options'})
-            print data
-            conn.send(res)
-            conn.close()
-            
-handler = AssHandler()
-comms = AssComms()
-comms.receive()
-#handler.handle("shutdown", {'test':'test_options'})
+        
+        self.data = self.request.recv(1024).strip()
+        print "Got connection from %s" % self.client_address[0]
+        print self.data
+        res = handler.handle(self.data, {"test":"test"})
+        self.request.send(res)
+        
+if __name__ == "__main__":
+	HOST = socket.gethostbyname(socket.gethostname())
+	PORT = 2501
+	
+	server = SocketServer.TCPServer((HOST, PORT), AssComms)
+	
+	server.serve_forever()
