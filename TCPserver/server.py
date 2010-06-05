@@ -10,7 +10,7 @@ class  AssHandler(object):
         
     def handle_cancel(self, options):
         os.system("shutdown /a")
-        res = "shutdown cancelled"
+        res = "Shutdown cancelled"
         return res
         
     def handle_reboot(self, options):
@@ -30,15 +30,20 @@ class AssComms(SocketServer.BaseRequestHandler):
         handler = AssHandler()
         
         self.data = self.request.recv(1024).strip()
-        print "Got connection from %s" % self.client_address[0]
+        print "Connection from %s" % self.client_address[0]
         print self.data
         res = handler.handle(self.data, {"test":"test"})
         self.request.send(res)
         
 if __name__ == "__main__":
-	HOST = socket.gethostbyname(socket.gethostname())
+	hostname = socket.gethostbyname(socket.gethostname())
+	HOST = hostname
 	PORT = 2501
-	
+	print "-----------------------------------"
+	print "| Welcome to A.S.S v0.1 alpha (!) |"
+	print "-----------------------------------\n\n"
+	print " %s listenting on port %s\n\n" % (str(hostname), str(PORT))
+	print " Press ctrl-c to exit"
 	server = SocketServer.TCPServer((HOST, PORT), AssComms)
-	
 	server.serve_forever()
+
