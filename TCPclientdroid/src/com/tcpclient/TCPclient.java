@@ -15,6 +15,7 @@ public class TCPclient extends Activity{
 	EditText hostname;
 	TextView status;
 	Button sendButton;
+	Button cancelButton;
 	
     @Override
     public void onCreate(Bundle icicle){
@@ -26,6 +27,17 @@ public class TCPclient extends Activity{
         hostname = (EditText)findViewById(R.id.hostname);
         status = (TextView)findViewById(R.id.status);
         sendButton = (Button)findViewById(R.id.send);
+        cancelButton = (Button)findViewById(R.id.cancel_sh);
+        
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View view) {				
+				try {
+					doSend("cancel", hostname.getText().toString());
+				} catch (Exception e) {
+					status.setText(e.getMessage());
+				}
+			}
+		});
         
         sendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
@@ -47,11 +59,11 @@ public class TCPclient extends Activity{
         
 		try {	
 			status.setText("try loop");
-			clientSocket = new Socket(hostname, 2087);
+			clientSocket = new Socket(hostname, 2501);
 			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	        sentence = inFromUser.readLine();
-	        outToServer.writeBytes(sentence + '\n');
+	        //sentence = inFromUser.readLine();
+	        outToServer.writeBytes(sentence);
 	        modifiedSentence = inFromServer.readLine();
 	        status.setText(modifiedSentence);
 	        clientSocket.close();
