@@ -3,10 +3,22 @@ import socket
 import SocketServer
 
 class  AssHandler(object):
-    def handle_shutdown(self, options = {"delay":"300"}):
+    
+    def format_secs(self, seconds):
+        hours = seconds / 3600
+        seconds -= 3600*hours
+        minutes = seconds / 60
+        seconds -= 60*minutes
+        if hours == 0:
+            return "%02d mins %02d secs" % (minutes, seconds)
+            if minutes == 0:
+                return "%d secs" % (seconds)
+        return "%02d hours %02d mins %02d secs" % (hours, minutes, seconds)
+    
+    def handle_shutdown(self, options = {"delay":"3000"}):
         shutdown_string = "shutdown /s /t %s" % options['delay']
         os.system(shutdown_string)
-        res = "Computer will shutdown in %s " % options['delay']
+        res = "Computer will shutdown in %s " % self.format_secs(int(options['delay']))
         return res
         
     def handle_cancel(self):
