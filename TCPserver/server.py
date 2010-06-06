@@ -35,27 +35,29 @@ class  AssHandler(object):
     def handle(self, type, *args, **kwargs):
         func = getattr(self, 'handle_%s' % type, None)
         if func is None:
-            raise Exception("Cannot find handler %r" % type)
+            return False
         return func(*args, **kwargs)
 
 class AssComms(SocketServer.BaseRequestHandler):
     def handle(self, options = {}):
-	handler = AssHandler()
-	data = self.request[0].strip()
-	socket = self.request[1]
-	print "%s wrote:" % self.client_address[0]
-	print data
-	res = handler.handle(data)
-	socket.sendto(res, self.client_address)
+        handler = AssHandler()
+        data = self.request[0].strip()
+        socket = self.request[1]
+        print "%s wrote:" % self.client_address[0]
+        print data
+        res = handler.handle(data)
+        if res == False:
+            res = "Unknown command"
+        socket.sendto(res, self.client_address)
         
 if __name__ == "__main__":
-	HOST = socket.gethostbyname(socket.gethostname())
-	PORT = 2501
-	print "-----------------------------------"
-	print "| Welcome to A.S.S v0.1 alpha (!) |"
-	print "-----------------------------------\n\n"
-	print " %s listenting on port %s\n\n" % (str(HOST), str(PORT))
-	print " Press ctrl-c to exit"
-	server = SocketServer.UDPServer((HOST, PORT), AssComms)
-	server.serve_forever()
+    HOST = socket.gethostbyname(socket.gethostname())
+    PORT = 2501
+    print "-----------------------------------"
+    print "| Welcome to A.S.S v0.1 alpha (!) |"
+    print "-----------------------------------\n\n"
+    print " %s listenting on port %s\n\n" % (str(HOST), str(PORT))
+    print " Press ctrl-c to exit"
+    server = SocketServer.UDPServer((HOST, PORT), AssComms)
+    server.serve_forever()
 
