@@ -40,13 +40,13 @@ class  AssHandler(object):
 
 class AssComms(SocketServer.BaseRequestHandler):
     def handle(self, options = {}):
-        handler = AssHandler()
-        
-        self.data = self.request.recv(1024).strip()
-        print "Connection from %s" % self.client_address[0]
-        print self.data
-        res = handler.handle(self.data)
-        self.request.send(res)
+	handler = AssHandler()
+	data = self.request[0].strip()
+	socket = self.request[1]
+	print "%s wrote:" % self.client_address[0]
+	print data
+	res = handler.handle(data)
+	socket.sendto(res, self.client_address)
         
 if __name__ == "__main__":
 	HOST = socket.gethostbyname(socket.gethostname())
@@ -56,6 +56,6 @@ if __name__ == "__main__":
 	print "-----------------------------------\n\n"
 	print " %s listenting on port %s\n\n" % (str(HOST), str(PORT))
 	print " Press ctrl-c to exit"
-	server = SocketServer.TCPServer((HOST, PORT), AssComms)
+	server = SocketServer.UDPServer((HOST, PORT), AssComms)
 	server.serve_forever()
 
