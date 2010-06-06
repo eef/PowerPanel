@@ -30,6 +30,7 @@ public class TCPclient extends Activity{
         cancelButton = (Button)findViewById(R.id.cancel_sh);
         
         cancelButton.setOnClickListener(new View.OnClickListener() {
+        	System.out.println("Got into method send click");
 			public void onClick(View view) {				
 				try {
 					doSend("cancel", hostname.getText().toString());
@@ -41,6 +42,7 @@ public class TCPclient extends Activity{
         
         sendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
+				System.out.println("Got into method send click");
 				try {
 					doSend(inputString.getText().toString(), hostname.getText().toString());
 				} catch (Exception e) {
@@ -67,7 +69,7 @@ public class TCPclient extends Activity{
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);
             String modifiedSentence = new String(receivePacket.getData());
-            status.setText("FROM SERVER:" + modifiedSentence);
+            status.setText(modifiedSentence);
             clientSocket.close();
         } catch (UnknownHostException e) {
 			status.setText("Unknown host: " + e.getMessage());
