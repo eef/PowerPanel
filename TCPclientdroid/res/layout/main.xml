@@ -2,10 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent" android:padding="5px">
-	
-	<EditText android:id="@+id/hostname" android:hint="Enter hostname"
-		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:text="192.168.0.106" android:singleLine="true" />
 		
 	<EditText android:id="@+id/inp" android:hint="Enter send string"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
