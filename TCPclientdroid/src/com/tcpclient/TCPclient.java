@@ -34,7 +34,7 @@ public class TCPclient extends Activity{
 				try {
 					doSend("cancel", hostname.getText().toString());
 				} catch (Exception e) {
-					status.setText(e.getMessage());
+					status.setText(e.getCause().toString());
 				}
 			}
 		});
@@ -44,7 +44,7 @@ public class TCPclient extends Activity{
 				try {
 					doSend(inputString.getText().toString(), hostname.getText().toString());
 				} catch (Exception e) {
-					status.setText(e.getMessage());
+					status.setText(e.getCause().toString());
 				}
 			}
 		});
@@ -52,26 +52,44 @@ public class TCPclient extends Activity{
     }
     
     public void doSend(String sentence, String hostname) throws Exception {
-    	
-        String modifiedSentence;
-        BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-        Socket clientSocket;
-        
-		try {	
-			status.setText("try loop");
-			clientSocket = new Socket(hostname, 2501);
-			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-	        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	        //sentence = inFromUser.readLine();
-	        outToServer.writeBytes(sentence);
-	        modifiedSentence = inFromServer.readLine();
-	        status.setText(modifiedSentence);
-	        clientSocket.close();
-		} catch (UnknownHostException e) {
+        try {
+        	System.out.println("Got into method");
+        	System.out.println("Got into method");
+            DatagramSocket clientSocket = new DatagramSocket();
+            InetAddress IPAddress = InetAddress.getByName("192.168.0.255");
+            byte[] sendData = new byte[1024];
+            byte[] receiveData = new byte[1024];
+            status.setText("about Sent data");
+            sendData = sentence.getBytes();
+            status.setText("Sent data");
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 2501);
+            clientSocket.send(sendPacket);
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            clientSocket.receive(receivePacket);
+            String modifiedSentence = new String(receivePacket.getData());
+            status.setText("FROM SERVER:" + modifiedSentence);
+            clientSocket.close();
+        } catch (UnknownHostException e) {
 			status.setText("Unknown host: " + e.getMessage());
 		} catch (IOException e) {
 			status.setText("IO Exception: " + e.getMessage());
 		}
-		
+        
+//		try {	
+//			status.setText("try loop");
+//			clientSocket = new Socket(hostname, 2501);
+//			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+//	        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+//	        //sentence = inFromUser.readLine();
+//	        outToServer.writeBytes(sentence);
+//	        modifiedSentence = inFromServer.readLine();
+//	        status.setText(modifiedSentence);
+//	        clientSocket.close();
+//		} catch (UnknownHostException e) {
+//			status.setText("Unknown host: " + e.getMessage());
+//		} catch (IOException e) {
+//			status.setText("IO Exception: " + e.getMessage());
+//		}
+//		
     }
 }
