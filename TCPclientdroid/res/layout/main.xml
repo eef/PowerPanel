@@ -3,15 +3,11 @@
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent" android:padding="5px">
 		
-	<EditText android:id="@+id/inp" android:hint="Enter send string"
-		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:singleLine="true" />
-		
-	<Button android:id="@+id/send" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:text="Send" />
-		
-	<Button android:id="@+id/cancel_sh" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:text="Cancel" />
-	<TextView android:id="@+id/status" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" />
+<TableLayout android:id="@+id/TableLayout01" android:layout_width="wrap_content" android:layout_height="wrap_content">
+  <TableRow>    
+    <Button android:id="@+id/send" android:layout_column="2" android:text="Shutdown" />
+    <Button android:id="@+id/cancel_sh" android:layout_width="wrap_content"
+    android:layout_height="wrap_content" android:text="Cancel" />
+  </TableRow>
+</TableLayout>
 </LinearLayout>
