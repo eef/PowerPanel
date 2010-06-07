@@ -70,15 +70,19 @@ public class TCPclient extends Activity {
 			}
 		});
 	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		this.finish();
+	}
 
-	/* Creates the menu items */
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    menu.add(0, ADD_ID, 0, "Add");
 	    menu.add(0, EXIT_ID, 0, "Exit");
 	    return true;
 	}
 
-	/* Handles item selections */
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
 	    case ADD_ID:
@@ -96,7 +100,7 @@ public class TCPclient extends Activity {
 	}
 
 	private void exitApp() {
-		makeToast("Would exit");
+		onStop();
 	}
 
 	private void addComputer() {
