@@ -1,5 +1,7 @@
 package com.tcpclient;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,7 +19,8 @@ public class TCPclient extends Activity{
 	Button cancelButton;
 	String res;
 	
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void onCreate(Bundle icicle){
     	
         super.onCreate(icicle);        
@@ -28,6 +31,17 @@ public class TCPclient extends Activity{
         sendButton = (Button)findViewById(R.id.send);
         cancelButton = (Button)findViewById(R.id.cancel_sh);
         final Comms comm = new Comms();
+        
+        try {
+			List ifaces = comm.discover();
+			if(ifaces.isEmpty()) {
+				status.setText("No ips detected");
+			} else {
+				status.setText(ifaces.toString());
+			}
+		} catch (Exception e1) {
+			status.setText(e1.getCause().toString());
+		}
         
         cancelButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {				
@@ -52,27 +66,4 @@ public class TCPclient extends Activity{
 		});
         
     }
-    
-//    public void doSend(String sentence) throws Exception {
-//        try {
-//            DatagramSocket clientSocket = new DatagramSocket();
-//            InetAddress IPAddress[] = InetAddress.getAllByName("192.168.0.255");
-//            byte[] sendData = new byte[1024];
-//            byte[] receiveData = new byte[1024];
-//            status.setText("about Sent data");
-//            sendData = sentence.getBytes();
-//            status.setText("Sent data");
-//            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress[0], 2501);
-//            clientSocket.send(sendPacket);
-//            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-//            clientSocket.receive(receivePacket);
-//            String modifiedSentence = new String(receivePacket.getData());
-//            status.setText(modifiedSentence);
-//            clientSocket.close();
-//        } catch (UnknownHostException e) {
-//			status.setText("Unknown host: " + e.getMessage());
-//		} catch (IOException e) {
-//			status.setText("IO Exception: " + e.getMessage());
-//		}
-//    }
 }
