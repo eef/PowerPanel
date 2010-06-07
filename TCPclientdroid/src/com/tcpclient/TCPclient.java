@@ -7,35 +7,39 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Button;
 import android.widget.Toast;
 
+public class TCPclient extends Activity {
 
-public class TCPclient extends Activity{
-	
 	EditText inputString;
 	EditText hostname;
 	TextView status;
 	Button sendButton;
 	Button cancelButton;
 	String res;
-	
-    @SuppressWarnings("unchecked")
+	String[] menuItems = { "one", "two", "three" };
+	public static final int ADD_ID = Menu.FIRST + 1;
+	public static final int EXIT_ID = Menu.FIRST + 2;
+
+	@SuppressWarnings("unchecked")
 	@Override
-    public void onCreate(Bundle icicle){
-    	
-        super.onCreate(icicle);        
-        setContentView(R.layout.main);
-        
-        sendButton = (Button)findViewById(R.id.send);
-        cancelButton = (Button)findViewById(R.id.cancel_sh);
-        final Comms comm = new Comms();
-        
-        try {
+	public void onCreate(Bundle icicle) {
+
+		super.onCreate(icicle);
+		setContentView(R.layout.main);
+
+		sendButton = (Button) findViewById(R.id.send);
+		cancelButton = (Button) findViewById(R.id.cancel_sh);
+		final Comms comm = new Comms();
+
+		try {
 			List ifaces = comm.discover();
-			if(ifaces.isEmpty()) {
+			if (ifaces.isEmpty()) {
 				makeAlert("No interfaces found");
 			} else {
 				makeToast(ifaces.toString());
@@ -43,9 +47,9 @@ public class TCPclient extends Activity{
 		} catch (Exception dis_ex) {
 			makeAlert(dis_ex.getCause().toString());
 		}
-        
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) {				
+
+		cancelButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View view) {
 				try {
 					res = comm.doSend("cancel");
 					makeToast(res.trim());
@@ -54,8 +58,8 @@ public class TCPclient extends Activity{
 				}
 			}
 		});
-        
-        sendButton.setOnClickListener(new View.OnClickListener() {
+
+		sendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 				try {
 					res = comm.doSend("shutdown");
@@ -65,18 +69,47 @@ public class TCPclient extends Activity{
 				}
 			}
 		});
-        
-    }
-    
-    private void makeToast(String msg) {
-    	Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-    
-    private void makeAlert(String msg) {
-    	new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg).setNeutralButton("Close", new DialogInterface.OnClickListener(){
-    		public void onClick(DialogInterface dlg, int sumthin) {
-    			// Do nothing, it will close itself...hopefully
-    		}
-    	}).show();
-    }
+	}
+
+	/* Creates the menu items */
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    menu.add(0, ADD_ID, 0, "Add");
+	    menu.add(0, EXIT_ID, 0, "Exit");
+	    return true;
+	}
+
+	/* Handles item selections */
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	    case ADD_ID:
+	        addComputer();
+	        return true;
+	    case EXIT_ID:
+	        exitApp();
+	        return true;
+	    }
+	    return false;
+	}
+
+	private void makeToast(String msg) {
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
+
+	private void exitApp() {
+		makeToast("Would exit");
+	}
+
+	private void addComputer() {
+		makeToast("Would add PC");
+	}
+
+	private void makeAlert(String msg) {
+		new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg)
+				.setNeutralButton("Close",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dlg, int sumthin) {
+								// Do nothing, it will close itself...hopefully
+							}
+						}).show();
+	}
 }
