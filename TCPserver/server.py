@@ -32,6 +32,10 @@ class  AssHandler(object):
     def handle_hibernate(self):
         os.system("shutdown /h")
 
+    def handle_hello(self):
+        res = "Found computer " + str(socket.gethostbyname(socket.gethostname()))
+        return res
+
     def handle(self, type, *args, **kwargs):
         func = getattr(self, 'handle_%s' % type, None)
         if func is None:
