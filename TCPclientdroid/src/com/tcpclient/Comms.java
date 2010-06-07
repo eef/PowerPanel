@@ -22,7 +22,7 @@ public class Comms {
 	        NetworkInterface iface = ifaces.nextElement();
 	        for(Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses.hasMoreElements();) {
 	            InetAddress address = addresses.nextElement();
-            	if(!address.getHostAddress().startsWith("10.0")) {
+            	if(!address.getHostAddress().startsWith("10.")) {
             		if(!address.getHostAddress().startsWith("127.0")) {
             			str.add(address.getHostAddress());	
             		}
