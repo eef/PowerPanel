@@ -3,11 +3,14 @@ package com.tcpclient;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Button;
+import android.widget.Toast;
 
 
 public class TCPclient extends Activity{
@@ -26,8 +29,6 @@ public class TCPclient extends Activity{
         super.onCreate(icicle);        
         setContentView(R.layout.main);
         
-        inputString = (EditText)findViewById(R.id.inp);
-        status = (TextView)findViewById(R.id.status);
         sendButton = (Button)findViewById(R.id.send);
         cancelButton = (Button)findViewById(R.id.cancel_sh);
         final Comms comm = new Comms();
@@ -35,21 +36,21 @@ public class TCPclient extends Activity{
         try {
 			List ifaces = comm.discover();
 			if(ifaces.isEmpty()) {
-				status.setText("No ips detected");
+				makeAlert("No interfaces found");
 			} else {
-				status.setText(ifaces.toString());
+				makeToast(ifaces.toString());
 			}
-		} catch (Exception e1) {
-			status.setText(e1.getCause().toString());
+		} catch (Exception dis_ex) {
+			makeAlert(dis_ex.getCause().toString());
 		}
         
         cancelButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {				
 				try {
 					res = comm.doSend("cancel");
-					status.setText(res);
+					makeToast(res.trim());
 				} catch (Exception e) {
-					status.setText(e.getCause().toString());
+					makeAlert(e.getCause().toString());
 				}
 			}
 		});
@@ -57,13 +58,25 @@ public class TCPclient extends Activity{
         sendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 				try {
-					res = comm.doSend(inputString.getText().toString());
-					status.setText(res);
+					res = comm.doSend("shutdown");
+					makeToast(res.trim());
 				} catch (Exception e) {
-					status.setText(e.getCause().toString());
+					makeAlert(e.getCause().toString());
 				}
 			}
 		});
         
+    }
+    
+    private void makeToast(String msg) {
+    	Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+    
+    private void makeAlert(String msg) {
+    	new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg).setNeutralButton("Close", new DialogInterface.OnClickListener(){
+    		public void onClick(DialogInterface dlg, int sumthin) {
+    			// Do nothing, it will close itself...hopefully
+    		}
+    	}).show();
     }
 }
