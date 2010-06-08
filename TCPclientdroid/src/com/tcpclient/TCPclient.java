@@ -1,6 +1,6 @@
 package com.tcpclient;
 
-import java.util.List;
+import java.net.InetAddress;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,7 +26,7 @@ public class TCPclient extends Activity {
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
-	@SuppressWarnings("unchecked")
+//	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle icicle) {
 
@@ -36,16 +36,12 @@ public class TCPclient extends Activity {
 		sendButton = (Button) findViewById(R.id.send);
 		cancelButton = (Button) findViewById(R.id.cancel_sh);
 		final Comms comm = new Comms();
-
+		
 		try {
-			List ifaces = comm.discover();
-			if (ifaces.isEmpty()) {
-				makeAlert("No interfaces found");
-			} else {
-				makeToast(ifaces.toString());
-			}
-		} catch (Exception dis_ex) {
-			makeAlert(dis_ex.getCause().toString());
+			InetAddress computers[] = comm.findComputers();
+			makeToast(computers[0].getHostAddress() + ":::" + computers.length);
+		} catch (Exception e1) {
+			makeAlert(e1.getCause().toString());
 		}
 
 		cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -70,7 +66,7 @@ public class TCPclient extends Activity {
 			}
 		});
 	}
-	
+
 	@Override
 	protected void onStop() {
 		super.onStop();
@@ -78,21 +74,21 @@ public class TCPclient extends Activity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    menu.add(0, ADD_ID, 0, "Add");
-	    menu.add(0, EXIT_ID, 0, "Exit");
-	    return true;
+		menu.add(0, ADD_ID, 0, "Add");
+		menu.add(0, EXIT_ID, 0, "Exit");
+		return true;
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    switch (item.getItemId()) {
-	    case ADD_ID:
-	        addComputer();
-	        return true;
-	    case EXIT_ID:
-	        exitApp();
-	        return true;
-	    }
-	    return false;
+		switch (item.getItemId()) {
+		case ADD_ID:
+			addComputer();
+			return true;
+		case EXIT_ID:
+			exitApp();
+			return true;
+		}
+		return false;
 	}
 
 	private void makeToast(String msg) {

@@ -4,32 +4,51 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.net.NetworkInterface;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.StringTokenizer;
 
 public class Comms {
 	public static void main(String[] args) {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	public List discover() throws Exception {
-		List str = new ArrayList();
-		for(Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
-	        NetworkInterface iface = ifaces.nextElement();
-	        for(Enumeration<InetAddress> addresses = iface.getInetAddresses(); addresses.hasMoreElements();) {
-	            InetAddress address = addresses.nextElement();
-            	if(!address.getHostAddress().startsWith("10.")) {
-            		if(!address.getHostAddress().startsWith("127.0")) {
-            			str.add(address.getHostAddress());	
-            		}
-            	}
-	        }
-	    }
-		return str;
+	private String getLocalIpAddress() {
+		try {
+			for (Enumeration<NetworkInterface> en = NetworkInterface
+					.getNetworkInterfaces(); en.hasMoreElements();) {
+				NetworkInterface intf = en.nextElement();
+				for (Enumeration<InetAddress> enumIpAddr = intf
+						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+					InetAddress inetAddress = enumIpAddr.nextElement();
+					if (!inetAddress.isLoopbackAddress()) {
+						return inetAddress.getHostAddress().toString();
+					}
+				}
+			}
+		} catch (SocketException ex) {
+		}
+		return null;
+	}
+
+	private String getBroadcastIP() {
+		String myIP = getLocalIpAddress();
+		StringTokenizer tokens = new StringTokenizer(myIP, ".");
+		int count = 0;
+		String broadcast = "";
+		while (count < 3) {
+			broadcast += tokens.nextToken() + ".";
+			count++;
+		}
+		return broadcast + "255";
+	}
+
+	public InetAddress[] findComputers() throws Exception {
+		String ba = getBroadcastIP();
+		InetAddress IPAddress[] = InetAddress.getAllByName(ba);
+		return IPAddress;
 	}
 
 	public String doSend(String sentence) throws Exception {
