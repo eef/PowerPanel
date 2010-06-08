@@ -4,6 +4,7 @@
 *.exe
 *.o
 *.so
+*.log
 TCPclientdroid/bin/
 TCPclientdroid/gen/
 TCPserver/dist/
