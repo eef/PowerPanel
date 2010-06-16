@@ -10,7 +10,31 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
+
 public class Comms {
+	String broadcaststr;
+	public Comms(DhcpInfo dhcp) {
+		
+		try {	    	  
+	    	   
+	    	   
+			    if (dhcp == null) {
+			      //Log.d(TAG, "Could not get dhcp info");
+			    }
+
+			    int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+			    byte[] quads = new byte[4];
+			    for (int k = 0; k < 4; k++)
+			      quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+			    
+			    broadcaststr = InetAddress.getByAddress(quads).toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args) {
 
 	}
@@ -33,23 +57,7 @@ public class Comms {
 		return null;
 	}
 
-	private String getBroadcastIP() {
-		String myIP = getLocalIpAddress();
-		StringTokenizer tokens = new StringTokenizer(myIP, ".");
-		int count = 0;
-		String broadcast = "";
-		while (count < 3) {
-			broadcast += tokens.nextToken() + ".";
-			count++;
-		}
-		return broadcast + "255";
-	}
-
-	public InetAddress[] findComputers() throws Exception {
-		String ba = getBroadcastIP();
-		InetAddress IPAddress[] = InetAddress.getAllByName(ba);
-		return IPAddress;
-	}
+	
 
 	public String doSend(String sentence) throws Exception {
 		try {

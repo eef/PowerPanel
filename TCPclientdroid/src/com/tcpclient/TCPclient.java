@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
@@ -29,20 +31,24 @@ public class TCPclient extends Activity {
 //	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle icicle) {
+		
+		WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
+		DhcpInfo dhcp = wifi.getDhcpInfo();
 
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 
 		sendButton = (Button) findViewById(R.id.send);
 		cancelButton = (Button) findViewById(R.id.cancel_sh);
-		final Comms comm = new Comms();
+		final Comms comm = new Comms(dhcp);
+		makeAlert(comm.broadcaststr);
 		
-		try {
+		/*try {
 			InetAddress computers[] = comm.findComputers();
 			makeToast(computers[0].getHostAddress() + ":::" + computers.length);
 		} catch (Exception e1) {
 			makeAlert(e1.getCause().toString());
-		}
+		}*/
 
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
