@@ -8,10 +8,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 
 import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
 
 public class Comms {
 	String broadcaststr;
@@ -39,6 +37,7 @@ public class Comms {
 
 	}
 
+	@SuppressWarnings("unused")
 	private String getLocalIpAddress() {
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface

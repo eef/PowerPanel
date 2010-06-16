@@ -1,7 +1,5 @@
 package com.tcpclient;
 
-import java.net.InetAddress;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -24,7 +22,6 @@ public class TCPclient extends Activity {
 	Button sendButton;
 	Button cancelButton;
 	String res;
-	String[] menuItems = { "one", "two", "three" };
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
@@ -42,13 +39,6 @@ public class TCPclient extends Activity {
 		cancelButton = (Button) findViewById(R.id.cancel_sh);
 		final Comms comm = new Comms(dhcp);
 		makeAlert(comm.broadcaststr);
-		
-		/*try {
-			InetAddress computers[] = comm.findComputers();
-			makeToast(computers[0].getHostAddress() + ":::" + computers.length);
-		} catch (Exception e1) {
-			makeAlert(e1.getCause().toString());
-		}*/
 
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
