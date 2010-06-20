@@ -25,7 +25,6 @@ public class TCPclient extends Activity {
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
-//	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle icicle) {
 		

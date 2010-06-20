@@ -10,8 +10,10 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 
 import android.net.DhcpInfo;
+import android.util.Log;
 
 public class Comms {
+	private static final String TAG = null;
 	String broadcaststr;
 	public Comms(DhcpInfo dhcp) {
 		
@@ -57,11 +59,17 @@ public class Comms {
 	}
 
 	
+	public int discover() {
+		return 0;
+		
+	}
+	
 
 	public String doSend(String sentence) throws Exception {
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress[] = InetAddress.getAllByName("192.168.0.255");
+			InetAddress IPAddress[] = InetAddress.getAllByName(broadcaststr);
+			Log.d(TAG, IPAddress[0].toString());
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
 			sendData = sentence.getBytes();
