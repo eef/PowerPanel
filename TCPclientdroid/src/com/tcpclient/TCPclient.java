@@ -3,6 +3,7 @@ package com.tcpclient;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -45,7 +46,7 @@ public class TCPclient extends ListActivity {
 		
 		storedComps = storedComps();
 		
-		//comps = buildCompList(storedComps);
+		comps = buildCompList(storedComps);
 		
 		setListAdapter(new ArrayAdapter<String>(this, R.layout.row, R.id.label, comps));
 		
@@ -84,21 +85,16 @@ public class TCPclient extends ListActivity {
 	}
 	
 	private String[] buildCompList(HashMap<String, String> sc) {
-		String[] ret = null;
-		int i = 0;
-		Collection keys = sc.keySet();
-		Iterator it = keys.iterator();
-		
-		while(it.hasNext()) {
-			ret[i] = it.next().toString();
-			i++;
-		}
-		return ret;
+		 Iterator it = mp.entrySet().iterator();
+		    while (it.hasNext()) {
+		        Map.Entry pairs = (Map.Entry)it.next();
+		        System.out.println(pairs.getKey() + " = " + pairs.getValue());
+		    }
 	}
 	
-	private HashMap<String, String> storedComps() {
+	private Map<String, String> storedComps() {
 		// Mocking the database at the moment
-		HashMap<String, String> compInfos = new HashMap<String, String>();
+		Map<String, String> compInfos = new HashMap<String, String>();
 		compInfos.put("Amber", "192.168.0.105");
 		compInfos.put("Arthur", "192.168.0.103");
 		return compInfos;
