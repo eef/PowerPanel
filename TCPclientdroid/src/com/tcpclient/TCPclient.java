@@ -44,9 +44,9 @@ public class TCPclient extends ListActivity {
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 		
-		storedComps = storedComps();
+		//storedComps = storedComps();
 		
-		comps = buildCompList(storedComps);
+		//comps = buildCompList(storedComps);
 		
 		setListAdapter(new ArrayAdapter<String>(this, R.layout.row, R.id.label, comps));
 		
@@ -84,13 +84,13 @@ public class TCPclient extends ListActivity {
 		return false;
 	}
 	
-	private String[] buildCompList(HashMap<String, String> sc) {
-		 Iterator it = mp.entrySet().iterator();
-		    while (it.hasNext()) {
-		        Map.Entry pairs = (Map.Entry)it.next();
-		        System.out.println(pairs.getKey() + " = " + pairs.getValue());
-		    }
-	}
+//	private String[] buildCompList(HashMap<String, String> sc) {
+//		 Iterator it = mp.entrySet().iterator();
+//		    while (it.hasNext()) {
+//		        Map.Entry pairs = (Map.Entry)it.next();
+//		        System.out.println(pairs.getKey() + " = " + pairs.getValue());
+//		    }
+//	}
 	
 	private Map<String, String> storedComps() {
 		// Mocking the database at the moment
