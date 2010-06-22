@@ -52,7 +52,7 @@ public class TCPclient extends ListActivity {
 		
 		selection=(TextView)findViewById(R.id.selection);
 		
-		selection.setText(comm.broadcaststr.toString());
+		selection.setText(comm.getBroadcast().toString());
 		
 	}
 	
