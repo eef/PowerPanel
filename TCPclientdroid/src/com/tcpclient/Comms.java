@@ -16,10 +16,15 @@ import android.net.DhcpInfo;
 import android.util.Log;
 
 public class Comms {
+<<<<<<< HEAD
 	
 	private List<InetAddress> iplist=new ArrayList<InetAddress>();	
 	private InetAddress broadcastIP;
 	
+=======
+	private static final String TAG = null;
+	String broadcaststr;
+>>>>>>> 21a330ef468ecb4992c2d500b4430ba3f1ad39bf
 	public Comms(DhcpInfo dhcp) {
 		
 		try {
@@ -100,6 +105,7 @@ public class Comms {
 		}
 	}
 	
+<<<<<<< HEAD
 	public String showServerAddresses(){	//Returns a string with all discovered servers
 		Iterator<InetAddress> iterator=iplist.iterator();
 		String addresses = "";		
@@ -118,9 +124,19 @@ public class Comms {
 	}
 	
 	public String doSend(String command) throws Exception {
+=======
+	public int discover() {
+		return 0;
+		
+	}
+	
+
+	public String doSend(String sentence) throws Exception {
+>>>>>>> 21a330ef468ecb4992c2d500b4430ba3f1ad39bf
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress[] = InetAddress.getAllByName("192.168.0.255");
+			InetAddress IPAddress[] = InetAddress.getAllByName(broadcaststr);
+			Log.d(TAG, IPAddress[0].toString());
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
 			sendData = command.getBytes();

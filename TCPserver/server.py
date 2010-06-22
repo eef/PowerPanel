@@ -58,6 +58,7 @@ class AssComms(SocketServer.BaseRequestHandler):
 if __name__ == "__main__":
     HOST = socket.gethostbyname(socket.gethostname())
     PORT = 2501
+    COMPUTER_NAME = "project2501"
     print "-----------------------------------"
     print "| Welcome to A.S.S v0.1 alpha (!) |"
     print "-----------------------------------\n\n"
