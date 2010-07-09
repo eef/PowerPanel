@@ -6,6 +6,8 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.method.NumberKeyListener;
 import android.util.Log;
@@ -35,6 +37,15 @@ public class TCPclient extends ListActivity {
 		Log.d(tag, "==========1============");
 		Log.d(tag, "==========2============");
 		super.onCreate(savedInstanceState);
+		WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
+		DhcpInfo dhcp = wifi.getDhcpInfo();
+		final Comms comm = new Comms(dhcp);
+		try {
+			comm.discover();
+		} catch (Exception e) {
+			Log.d("discover", "Discover: " + e.getMessage());
+		}
+		setContentView(R.layout.main);
 		db = (new DatabaseHelper(this)).getWritableDatabase();
 		constantsCursor = db.rawQuery("SELECT _ID, title, value "
 				+ "FROM constants ORDER BY title", null);
