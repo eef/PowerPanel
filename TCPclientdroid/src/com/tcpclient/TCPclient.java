@@ -1,124 +1,194 @@
 package com.tcpclient;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.View;
+import android.text.method.NumberKeyListener;
+import android.util.Log;
+import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class TCPclient extends ListActivity {
-	
-	String res;
-	TextView selection;
-	HashMap<String, String> storedComps;
-	String[] comps = {"amber", "arthur"};
-	
-	public static final int ADD_ID = Menu.FIRST + 1;
-	public static final int EXIT_ID = Menu.FIRST + 2;
+	private static final int ADD_ID = Menu.FIRST + 1;
+	private static final int DELETE_ID = Menu.FIRST + 3;
+	private static final int CLOSE_ID = Menu.FIRST + 4;
+	private static final String tag = null;
+	private SQLiteDatabase db = null;
+	private Cursor constantsCursor = null;
 
 	@Override
-	public void onCreate(Bundle icicle) {
-		
-		WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
-		DhcpInfo dhcp = wifi.getDhcpInfo();
-		final Comms comm = new Comms(dhcp);
-		
-		super.onCreate(icicle);
-		setContentView(R.layout.main);
-		
-		//storedComps = storedComps();
-		
-		//comps = buildCompList(storedComps);
-		
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.row, R.id.label, comps));
-		
-		selection=(TextView)findViewById(R.id.selection);
-		
-		selection.setText(comm.broadcaststr.toString());
-		
-	}
-	
-	public void onListItemClick(ListView parent, View v, int position, long id) {
-		
+	public void onCreate(Bundle savedInstanceState) {
+		Log.d(tag, "==========1============");
+		Log.d(tag, "==========2============");
+		super.onCreate(savedInstanceState);
+		db = (new DatabaseHelper(this)).getWritableDatabase();
+		constantsCursor = db.rawQuery("SELECT _ID, title, value "
+				+ "FROM constants ORDER BY title", null);
+		Log.d(tag, "==========3============");
+		ListAdapter adapter = new SimpleCursorAdapter(this, R.layout.row,
+				constantsCursor, new String[] { "title", "value" }, new int[] {
+						R.id.title, R.id.value });
+		Log.d(tag, "==========4============");
+
+		setListAdapter(adapter);
+		registerForContextMenu(getListView());
 	}
 
 	@Override
-	protected void onStop() {
-		super.onStop();
-		this.finish();
+	public void onDestroy() {
+		super.onDestroy();
+
+		constantsCursor.close();
+		db.close();
 	}
 
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, ADD_ID, 0, "Add");
-		menu.add(0, EXIT_ID, 0, "Exit");
-		return true;
+		menu.add(Menu.NONE, ADD_ID, Menu.NONE, "Add").setIcon(R.drawable.add)
+				.setAlphabeticShortcut('a');
+		menu.add(Menu.NONE, CLOSE_ID, Menu.NONE, "Close").setIcon(
+				R.drawable.eject).setAlphabeticShortcut('c');
+
+		return (super.onCreateOptionsMenu(menu));
 	}
 
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case ADD_ID:
-			addComputer();
-			return true;
-		case EXIT_ID:
-			exitApp();
-			return true;
+			add();
+			return (true);
+
+		case CLOSE_ID:
+			finish();
+			return (true);
 		}
-		return false;
-	}
-	
-//	private String[] buildCompList(HashMap<String, String> sc) {
-//		 Iterator it = mp.entrySet().iterator();
-//		    while (it.hasNext()) {
-//		        Map.Entry pairs = (Map.Entry)it.next();
-//		        System.out.println(pairs.getKey() + " = " + pairs.getValue());
-//		    }
-//	}
-	
-	private Map<String, String> storedComps() {
-		// Mocking the database at the moment
-		Map<String, String> compInfos = new HashMap<String, String>();
-		compInfos.put("Amber", "192.168.0.105");
-		compInfos.put("Arthur", "192.168.0.103");
-		return compInfos;
+
+		return (super.onOptionsItemSelected(item));
 	}
 
-	private void makeToast(String msg) {
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenu.ContextMenuInfo menuInfo) {
+		menu.add(Menu.NONE, DELETE_ID, Menu.NONE, "Delete").setIcon(
+				R.drawable.delete).setAlphabeticShortcut('d');
 	}
 
-	private void exitApp() {
-		onStop();
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case DELETE_ID:
+			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
+					.getMenuInfo();
+
+			delete(info.id);
+			return (true);
+		}
+
+		return (super.onOptionsItemSelected(item));
 	}
 
-	private void addComputer() {
-		makeToast("Would add PC");
+	private void add() {
+		LayoutInflater inflater = LayoutInflater.from(this);
+		View addView = inflater.inflate(R.layout.add_edit, null);
+		final DialogWrapper wrapper = new DialogWrapper(addView);
+
+		new AlertDialog.Builder(this).setTitle(R.string.add_title).setView(
+				addView).setPositiveButton(R.string.ok,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						processAdd(wrapper);
+					}
+				}).setNegativeButton(R.string.cancel,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// ignore, just dismiss
+					}
+				}).show();
 	}
 
-	private void makeAlert(String msg) {
-		new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg)
-				.setNeutralButton("Close",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dlg, int sumthin) {
-								// Do nothing, it will close itself...hopefully
-							}
-						}).show();
+	private void delete(final long rowId) {
+		if (rowId > 0) {
+			new AlertDialog.Builder(this).setTitle(R.string.delete_title)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									processDelete(rowId);
+								}
+							}).setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
+	}
+
+	private void processAdd(DialogWrapper wrapper) {
+		ContentValues values = new ContentValues(2);
+
+		values.put("title", wrapper.getTitle());
+		values.put("value", wrapper.getValue());
+
+		db.insert("constants", "title", values);
+		constantsCursor.requery();
+	}
+
+	private void processDelete(long rowId) {
+		String[] args = { String.valueOf(rowId) };
+
+		db.delete("constants", "_ID=?", args);
+		constantsCursor.requery();
+	}
+
+	class DialogWrapper {
+		EditText titleField = null;
+		EditText valueField = null;
+		View base = null;
+
+		DialogWrapper(View base) {
+			this.base = base;
+			valueField = (EditText) base.findViewById(R.id.value);
+		}
+
+		String getTitle() {
+			return (getTitleField().getText().toString());
+		}
+
+		float getValue() {
+			return (new Float(getValueField().getText().toString())
+					.floatValue());
+		}
+
+		private EditText getTitleField() {
+			if (titleField == null) {
+				titleField = (EditText) base.findViewById(R.id.title);
+			}
+
+			return (titleField);
+		}
+
+		private EditText getValueField() {
+			if (valueField == null) {
+				valueField = (EditText) base.findViewById(R.id.value);
+			}
+
+			return (valueField);
+		}
 	}
 }
