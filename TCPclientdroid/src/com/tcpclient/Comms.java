@@ -21,13 +21,14 @@ public class Comms {
 	private List<InetAddress> iplist = new ArrayList<InetAddress>();
 	private InetAddress broadcastIP;
 	private String names = "";
+	private String tag = "Comms";
 
 	public Comms(DhcpInfo dhcp) {
 
 		try {
 
 			if (dhcp == null) {
-				Log.d("shit", "Could not get dhcp info");
+				Log.d(tag, "Could not get dhcp info");
 			}
 
 			int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
@@ -66,8 +67,8 @@ public class Comms {
 
 	public void discover() throws Exception {
 
-		if (broadcastIP != null) {
-			Log.e("discovery", "shit the bed..");
+		if (broadcastIP == null) {
+			Log.e(tag + " discovery", "shit the bed.. no broadcast");
 		}
 
 		try {
@@ -89,17 +90,17 @@ public class Comms {
 			while (System.currentTimeMillis() < end) {
 				clientSocket.receive(receivePacket);
 				iplist.add(receivePacket.getAddress());
-				Log.e("discovery", (receivePacket.getAddress().toString()));
+				Log.d(tag + " discovery discovered", (receivePacket.getAddress().toString()));
+				Log.d(tag + " discovery ip count", String.valueOf(iplist.size()));
 				Thread.sleep(500);
-				Log.e("discovery1", String.valueOf(iplist.size()));
 			}
 			clientSocket.close();
 
 		} catch (UnknownHostException e) {
-			Log.e("recieved:", "UnknownHostException:" + e.toString());
+			Log.e(tag + " discovery", "UnknownHostException:" + e.toString());
 
 		} catch (IOException e) {
-			Log.e("recieved:", "IOException:" + e.toString());
+			Log.e(tag + " discovery", "IOException:" + e.toString());
 		}
 	}
 
@@ -111,10 +112,10 @@ public class Comms {
 		while (iterator.hasNext()) {
 			try {
 				String name = doSend("info", iterator.next().toString().replace("/", ""));
-				Log.d("showServerAddresses Iterator", name);
+				Log.d(tag + " showServerAddresses Iterator", name);
 				names += "'" + name + "',";
 			} catch (Exception e) {
-				Log.d("get info", e.getMessage());
+				Log.e(tag + " discovery", e.getMessage());
 			}
 		}
 		Log.d("names", names.substring(0, names.length() - 1));
