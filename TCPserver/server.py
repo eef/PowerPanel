@@ -1,6 +1,8 @@
+import wx
 import os
 import socket
 import SocketServer
+    
 
 class  AssHandler(object):
     
@@ -30,14 +32,20 @@ class  AssHandler(object):
         os.system("shutdown /r")
 
     def handle_hibernate(self):
-		os.system("shutdown /h")
+        os.system("shutdown /h")
 
     def handle_hello(self):
         print "sending" + str(HOST) +":"+ str(PORT)
         res = "Found computer " + str(HOST) +":"+ str(PORT)
         return res
         
+    def handle_pair(self):
+        print "pair request recev"
+        res = "{ 'pkey':'123456789','mac':'00-1F-D0-5C-3A-BB',}"
+        return res
+        
     def handle(self, type, *args, **kwargs):
+        print "default handler"
         func = getattr(self, 'handle_%s' % type, None)
         if func is None:
             return False
@@ -56,14 +64,29 @@ class AssComms(SocketServer.BaseRequestHandler):
         socket.sendto(res, self.client_address)
         
 if __name__ == "__main__":
+
+    def OnTaskBarRight(event):
+        app.ExitMainLoop()
+    
     HOST = socket.gethostbyname(socket.gethostname())
     PORT = 2501
-    COMPUTER_NAME = "project2501"
     print "-----------------------------------"
     print "| Welcome to A.S.S v0.1 alpha (!) |"
     print "-----------------------------------\n\n"
     print " %s listenting on port %s\n\n" % (str(HOST), str(PORT))
     print " Press ctrl-c to exit"
     server = SocketServer.UDPServer((HOST, PORT), AssComms)
+    
     server.serve_forever()
+
+    app = wx.PySimpleApp()
+
+    icon = wx.Icon("favicon.ico", wx.BITMAP_TYPE_ICO)
+
+    tbicon = wx.TaskBarIcon()
+    tbicon.SetIcon(icon, "I am an Icon")
+
+    wx.EVT_TASKBAR_RIGHT_UP(tbicon, OnTaskBarRight)
+
+    app.MainLoop()
 

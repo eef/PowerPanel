@@ -1,5 +1,6 @@
 package com.tcpclient;
 
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,6 +9,7 @@ import java.util.Map;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
@@ -29,7 +31,7 @@ public class TCPclient extends ListActivity {
 	String res;
 	TextView selection;
 	HashMap<String, String> storedComps;
-	String[] comps = {"amber", "arthur"};
+	String[] comps = {"amber", "arthur1"};
 	
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
@@ -37,9 +39,26 @@ public class TCPclient extends ListActivity {
 	@Override
 	public void onCreate(Bundle icicle) {
 		
-		WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
-		DhcpInfo dhcp = wifi.getDhcpInfo();
-		final Comms comm = new Comms(dhcp);
+		
+		//new Comms((WifiManager) getSystemService(Context.WIFI_SERVICE));
+		//WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
+		//DhcpInfo dhcp = wifi.getDhcpInfo();
+		final Comms comm = new Comms((WifiManager) getSystemService(Context.WIFI_SERVICE));
+		makeAlert("starting");
+		/*try {
+			if (comm.pair(InetAddress.getByName("192.168.0.106")))
+				makeAlert("paired returned true");
+			else
+				makeAlert("paired returned false");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			makeAlert("didnt wurk!");
+			e.printStackTrace();
+		}*/
+		try {
+			comm.discover();
+			makeAlert("addresses" + comm.showServerAddresses());
+		} catch (Exception e) {makeAlert("disco didnt wurk!");}
 		
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
