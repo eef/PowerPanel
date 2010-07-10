@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -14,9 +18,12 @@ import android.content.DialogInterface;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -27,62 +34,69 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class TCPclient extends ListActivity {
-	
-	String res;
-	TextView selection;
-	HashMap<String, String> storedComps;
-	String[] comps = {"amber", "arthur1"};
-	
+
+	private String tag = "Main Activity ";
+	private TextView selection;
+	private String[] complist = mockComps();
+
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		
-		
-		//new Comms((WifiManager) getSystemService(Context.WIFI_SERVICE));
-		//WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
-		//DhcpInfo dhcp = wifi.getDhcpInfo();
-		final Comms comm = new Comms((WifiManager) getSystemService(Context.WIFI_SERVICE));
-		makeAlert("starting");
-		/*try {
-			if (comm.pair(InetAddress.getByName("192.168.0.106")))
-				makeAlert("paired returned true");
-			else
-				makeAlert("paired returned false");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			makeAlert("didnt wurk!");
-			e.printStackTrace();
-		}*/
-		try {
-			comm.discover();
-			makeAlert("addresses" + comm.showServerAddresses());
-		} catch (Exception e) {makeAlert("disco didnt wurk!");}
-		
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
-		
-		//storedComps = storedComps();
-		
-		//comps = buildCompList(storedComps);
-		
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.row, R.id.label, comps));
-		
-		selection=(TextView)findViewById(R.id.selection);
-		
-		selection.setText(comm.getBroadcast().toString());
-		
+		setListAdapter(new IconicAdapter());
+		selection = (TextView) findViewById(R.id.selection);
 	}
-	
+
 	public void onListItemClick(ListView parent, View v, int position, long id) {
-		
+		Log.d(tag, complist[position]);
+	}
+
+	class IconicAdapter extends ArrayAdapter {
+		Activity context;
+
+		IconicAdapter() {
+			super(TCPclient.this, R.layout.row, complist);
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+			LayoutInflater inflater = context.getLayoutInflater();
+			View row = inflater.inflate(R.layout.row, null);
+			TextView label = (TextView) row.findViewById(R.id.label);
+
+			String item = complist[position];
+
+			try {
+				JSONObject object = (JSONObject) new JSONTokener(item)
+						.nextValue();
+				label.setText(object.getString("name"));
+				ImageView icon = (ImageView) row.findViewById(R.id.icon);
+				if (object.getString("name").equals("ponline")) {
+					icon.setImageResource(R.drawable.delete);
+				} else if (object.getString("name").equals("offline")) {
+					icon.setImageResource(R.drawable.ok);
+				}
+			} catch (JSONException e) {
+				Log.e(tag, e.getMessage());
+			}
+
+			return (row);
+		}
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		this.finish();
+	}
+
+	private String[] mockComps() {
+		String[] mock_comp_list = {
+				"{'name' : 'will', 'id':'2', 'status':'ponline'}",
+				"{'name' : 'arthur', 'id':'1', 'status':'offline'}" };
+		return mock_comp_list;
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -94,7 +108,7 @@ public class TCPclient extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case ADD_ID:
-			addComputer();
+
 			return true;
 		case EXIT_ID:
 			exitApp();
@@ -102,37 +116,15 @@ public class TCPclient extends ListActivity {
 		}
 		return false;
 	}
-	
-//	private String[] buildCompList(HashMap<String, String> sc) {
-//		 Iterator it = mp.entrySet().iterator();
-//		    while (it.hasNext()) {
-//		        Map.Entry pairs = (Map.Entry)it.next();
-//		        System.out.println(pairs.getKey() + " = " + pairs.getValue());
-//		    }
-//	}
-	
-	private Map<String, String> storedComps() {
-		// Mocking the database at the moment
-		Map<String, String> compInfos = new HashMap<String, String>();
-		compInfos.put("Amber", "192.168.0.105");
-		compInfos.put("Arthur", "192.168.0.103");
-		return compInfos;
-	}
-
-	private void makeToast(String msg) {
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-	}
 
 	private void exitApp() {
 		onStop();
 	}
 
-	private void addComputer() {
-		makeToast("Would add PC");
-	}
-
 	private void makeAlert(String msg) {
-		new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg)
+		new AlertDialog.Builder(this)
+				.setTitle("Exception")
+				.setMessage(msg)
 				.setNeutralButton("Close",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dlg, int sumthin) {
@@ -140,4 +132,9 @@ public class TCPclient extends ListActivity {
 							}
 						}).show();
 	}
+
+	private void makeToast(String msg) {
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
+
 }
