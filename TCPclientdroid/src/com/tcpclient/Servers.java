@@ -50,7 +50,7 @@ public class Servers {
 	public String getServerInfo(InetAddress[] serverIPs){	
 		
 		
-		
+		return null;
 	}
 	
 	public void discover() throws Exception {	
