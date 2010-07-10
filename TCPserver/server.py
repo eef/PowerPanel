@@ -34,9 +34,9 @@ class  AssHandler(object):
     def handle_hibernate(self):
         os.system("shutdown /h")
 
-    def handle_hello(self):
-        print "sending" + str(HOST) +":"+ str(PORT)
+    def handle_hello(self):       
         res = "Found computer " + str(HOST) +":"+ str(PORT)
+        print "sending: " + res + " to: " + str(HOST) +":"+ str(PORT)
         return res
         
     def handle_pair(self):
@@ -44,8 +44,7 @@ class  AssHandler(object):
         res = "{ 'pairaccepted' : 'yes', 'pkey':'123456789','mac':'00-1F-D0-5C-3A-BB',}"
         return res
         
-    def handle(self, type, *args, **kwargs):
-        print "default handler"
+    def handle(self, type, *args, **kwargs):       
         func = getattr(self, 'handle_%s' % type, None)
         if func is None:
             return False
