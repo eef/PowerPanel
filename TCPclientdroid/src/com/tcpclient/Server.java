@@ -14,17 +14,20 @@ import android.util.Log;
 
 public class Server {
 	private int serverID = -1;
-	String pKey, mac, hostname = null;
+	String pKey, mac, hostname, name = null;
+	String status = "online";
 	InetAddress serverIP = null;
 
 	public Server(InetAddress serverIP) {
 		this.serverID = serverID;
 		this.serverIP = serverIP;
+		this.setHostName();
 	}
 
-	public Server(int serverID, InetAddress serverIP) {
+	public Server(int serverID, InetAddress serverIP) {		
 		this.serverID = serverID;
 		this.serverIP = serverIP;
+		this.setHostName();
 	}
 
 	public Server(int serverID, InetAddress serverIP, String pKey,
@@ -32,24 +35,32 @@ public class Server {
 		this.serverIP = serverIP;
 		this.pKey = pKey;
 		this.hostname = hostname;
+		this.setHostName();
 	}
 
 	public boolean isPaired() {
-		if (pKey == null)
-			return false;
-		return true;
+		if (status.equals("paired"))
+			return true;
+		return false;
 	}
-
+//"{'name' : 'will', 'id':'2', 'status':'ponline'}",
 	public JSONObject getInfo() throws JSONException {
 		JSONObject object = new JSONObject();
-		if (pKey == null)
+		if (serverID != -1)
+			object.put("id", serverID);
+		if (pKey != null)
 			object.put("pKey", pKey);
-		if (mac == null)
+		if (mac != null)
 			object.put("mac", mac);
-		if (hostname == null)
+		if (hostname != null)
 			object.put("hostname", hostname);
-		if (serverIP == null)
+		if (serverIP != null)
 			object.put("serverIP", serverIP);
+		if (name != null)
+			object.put("name", name);
+		if (status != null)
+			object.put("status", status);
+		
 		return object;
 	}
 
@@ -67,6 +78,16 @@ public class Server {
 
 	public void setPKey(String string) {
 		this.pKey = string; 			
+	}
+
+	private void setHostName() {		
+		if (serverIP != null)
+			serverIP.getHostName();
+	}
+
+	public void setStatus(String string) {
+		this.status = string;
+		
 	}
 
 }

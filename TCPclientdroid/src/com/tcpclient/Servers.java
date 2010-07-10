@@ -46,18 +46,24 @@ public class Servers {
 	public void addToServerList(InetAddress newServerIP) {
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
+		
 		serverList.add(bogla);
 	}
 
-	public String getServerInfo(int[] ) {
-		JSONObject serverInfo = new JSONObject();
+	public String[] getServerInfo() {
+		String[] serverInfo = null;
+		int x = 0;
 		Iterator<Server> server = serverList.iterator();
 		while (server.hasNext()) {
-			serverInfo.put((server.next().getInfo()).toString();
-			if (server.isPaired()){
-				return true;
-
-		return null;
+			try {
+				serverInfo[x] = server.next().getInfo().toString();
+				x += 1;
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}					
+		}
+		return serverInfo;		
 	}
 
 	public void discover() throws Exception {
@@ -119,6 +125,7 @@ public class Servers {
 						// TODO: create setters/getters?
 						server.setMAC(object.getString("mac"));
 						server.setPKey(object.getString("pkey"));
+						server.setStatus("paired");
 						// call 'sync' method
 						return true;
 					}
