@@ -58,7 +58,15 @@ public class TCPclient extends ListActivity {
 	}
 
 	public void onListItemClick(ListView parent, View v, int position, long id) {
-		Log.d(tag, complist[position]);
+		String item = complist[position];
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			makeToast("Name: " + object.getString("name") + "\nID: " + object.getString("id"));
+		} catch (JSONException e) {
+			Log.e(tag, "failed to serialize select item");
+		}
+		
+		
 	}
 
 	@Override
@@ -79,13 +87,11 @@ public class TCPclient extends ListActivity {
 		case DELETE_ID:
 			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-
 			makeToast("Delete");
 			break;
 		case SHUTDOWN_ID:
 			AdapterView.AdapterContextMenuInfo info1 = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-
 			makeToast("Shutdown");
 			break;
 		case CANCEL_ID:
@@ -117,9 +123,11 @@ public class TCPclient extends ListActivity {
 				label.setText(object.getString("name"));
 				ImageView icon = (ImageView) row.findViewById(R.id.icon);
 				if (object.getString("status").equals("ponline")) {
-					icon.setImageResource(R.drawable.delete);
+					icon.setImageResource(R.drawable.ponline);
 				} else if (object.getString("status").equals("offline")) {
-					icon.setImageResource(R.drawable.ok);
+					icon.setImageResource(R.drawable.offline);
+				} else if (object.getString("status").equals("online")) {
+					icon.setImageResource(R.drawable.online);
 				}
 			} catch (JSONException e) {
 				Log.e(tag, e.getMessage());
@@ -140,7 +148,19 @@ public class TCPclient extends ListActivity {
 				"{'name' : 'will', 'id':'2', 'status':'ponline'}",
 				"{'name' : 'arthur', 'id':'1', 'status':'offline'}",
 				"{'name' : 'luke', 'id':'3', 'status':'online'}",
-				"{'name' : 'yer da', 'id':'4', 'status':'online'}"};
+				"{'name' : 'yer da', 'id':'4', 'status':'offline'}",
+				"{'name' : 'yer maw', 'id':'5', 'status':'online'}",
+				"{'name' : 'asdasdwqi', 'id':'6', 'status':'ponline'}",
+				"{'name' : 'oij98joij', 'id':'7', 'status':'offline'}",
+				"{'name' : 'bn97h9uih9', 'id':'8', 'status':'online'}",
+				"{'name' : 'h87', 'id':'9', 'status':'online'}",
+				"{'name' : 'oif92f9if', 'id':'10', 'status':'offline'}",
+				"{'name' : 'kief9', 'id':'11', 'status':'offline'}",
+				"{'name' : 'edfoiow', 'id':'12', 'status':'online'}",
+				"{'name' : 'wekfkw', 'id':'13', 'status':'ponline'}",
+				"{'name' : 'hf982ekfm', 'id':'14', 'status':'ponline'}",
+				"{'name' : 'kjef29fjo', 'id':'15', 'status':'offline'}",
+				"{'name' : 'kejf0239', 'id':'16', 'status':'ponline'}"};
 		return mock_comp_list;
 	}
 
