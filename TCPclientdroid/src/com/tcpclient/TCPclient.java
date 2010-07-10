@@ -55,14 +55,12 @@ public class TCPclient extends ListActivity {
 	}
 
 	class IconicAdapter extends ArrayAdapter {
-		Activity context;
-
 		IconicAdapter() {
 			super(TCPclient.this, R.layout.row, complist);
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater inflater = context.getLayoutInflater();
+			LayoutInflater inflater = getLayoutInflater();
 			View row = inflater.inflate(R.layout.row, null);
 			TextView label = (TextView) row.findViewById(R.id.label);
 
@@ -73,9 +71,9 @@ public class TCPclient extends ListActivity {
 						.nextValue();
 				label.setText(object.getString("name"));
 				ImageView icon = (ImageView) row.findViewById(R.id.icon);
-				if (object.getString("name").equals("ponline")) {
+				if (object.getString("status").equals("ponline")) {
 					icon.setImageResource(R.drawable.delete);
-				} else if (object.getString("name").equals("offline")) {
+				} else if (object.getString("status").equals("offline")) {
 					icon.setImageResource(R.drawable.ok);
 				}
 			} catch (JSONException e) {
