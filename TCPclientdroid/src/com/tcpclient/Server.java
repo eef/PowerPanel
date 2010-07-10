@@ -61,4 +61,12 @@ public class Server {
 		return this.serverID;
 	}
 
+	public void setMAC(String string) {
+		this.mac = string; 		
+	}
+
+	public void setPKey(String string) {
+		this.pKey = string; 			
+	}
+
 }

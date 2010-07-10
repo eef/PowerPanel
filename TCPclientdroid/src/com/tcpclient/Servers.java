@@ -115,8 +115,8 @@ public class Servers {
 				JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
 				if (object.getString("paired").equals("yes")) {
 					// TODO: create setters/getters?
-					server.mac = object.getString("mac");
-					server.pKey = object.getString("pkey");
+					server.setMAC(object.getString("mac"));
+					server.setPKey(object.getString("pkey"));
 					// call 'sync' method
 					return true;
 				}
