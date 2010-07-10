@@ -118,12 +118,13 @@ public class Servers {
 	}
 
 	public boolean pair(List<Integer> serverIDs) {
+		boolean paired = false;
 		try {
 			Iterator<Integer> serverID = serverIDs.iterator();
 			while (serverID.hasNext()) {
 				Server server = getServer(serverID.next());
 				if (server.isPaired()){
-					return true;
+					paired = true;
 				}else{
 					String reply = doSend("pair", server.serverIP);
 					JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
@@ -133,12 +134,12 @@ public class Servers {
 						server.setPKey(object.getString("pkey"));
 						server.setStatus("paired");
 						// call 'sync' method
-						return true;
+						paired = true;
 					}
 				}
 			}
 
-			return false;
+			return paired;
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
