@@ -6,7 +6,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,12 +19,13 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 public class Servers {
+	private String tag = "Servers.java class";
 	
 	private int PORT = 2501;
 	private InetAddress broadcastIP;
 	private List<Server> serverList = new ArrayList<Server>();
 	private int nextID;
-	
+
 	public Servers(WifiManager wifi) {
 
 		try {
@@ -39,22 +42,21 @@ public class Servers {
 			e.printStackTrace();
 		}
 	}
-	
-	public void addToServerList(InetAddress newServerIP){
-		
+
+	public void addToServerList(InetAddress newServerIP) {
+
 		Server bogla = new Server(nextID, newServerIP);
-		nextID += 1;		
+		nextID += 1;
 		serverList.add(bogla);
 	}
-	
-	public String getServerInfo(InetAddress[] serverIPs){	
-		
-		
+
+	public String getServerInfo(InetAddress[] serverIPs) {
+
 		return null;
 	}
-	
-	public void discover() throws Exception {	
-		
+
+	public void discover() throws Exception {
+
 		if (broadcastIP != null) {
 			Log.e("discovery", "shit the bed..");
 		}
@@ -71,22 +73,22 @@ public class Servers {
 					receiveData.length);
 
 			clientSocket.setSoTimeout(5000); // sets how long reicive() blocks
-												// for once there are no new
-												// packates
+			// for once there are no new
+			// packates
 			long t = System.currentTimeMillis();
 			long end = t + 3000;
 			while (System.currentTimeMillis() < end) {
 				clientSocket.receive(receivePacket);
-				
-				//iplist.add(receivePacket.getAddress());
-				
+
+				// iplist.add(receivePacket.getAddress());
+
 				addToServerList(receivePacket.getAddress());
-				
+
 				Log.e("discovery", (receivePacket.getAddress().toString()));
 				Thread.sleep(500);
 				// modifiedSentence = modifiedSentence +
 				// receivePacket.getAddress().toString();
-				//Log.e("discovery1", String.valueOf(iplist.size()));
+				// Log.e("discovery1", String.valueOf(iplist.size()));
 			}
 			clientSocket.close();
 
@@ -97,33 +99,50 @@ public class Servers {
 			Log.e("recieved:", "IOException:" + e.toString());
 		}
 	}
-	
-	public boolean pair() {		
-		return false;		
+
+	public boolean pair() {
+		
+		return false;
 	}
-	
-	public boolean pair(Server server) {
+
+	public boolean pair(int serverID) {
 		try {
-			String reply = doSend("pair", server.serverIP);
-			JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
-			if (object.getString("paired").equals("yes")){
-				//TODO: create setters/getters?
-				server.mac = object.getString("mac");
-				server.pKey = object.getString("pkey");
-				//call 'sync' method
+			Server server = getServer(serverID);
+			if (server.isPaired()){
 				return true;
+			}else{
+				String reply = doSend("pair", server.serverIP);
+				JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
+				if (object.getString("paired").equals("yes")) {
+					// TODO: create setters/getters?
+					server.mac = object.getString("mac");
+					server.pKey = object.getString("pkey");
+					// call 'sync' method
+					return true;
+				}
 			}
 			return false;
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
 		} catch (UnknownHostException ue) {
-		 	return false;
+			return false;
 		} catch (Exception euz) {
 			return false;
-		}	
+		}
 	}
-	
+
+	private Server getServer(int serverID) {
+		Iterator<Server> server = serverList.iterator();
+		while (server.hasNext()) {
+			if (((Server) server.next()).getServerID() == serverID) {
+				return (Server) server;
+			}
+		}
+		return (Server) server;
+	}
+
 	public String doSend(String command, InetAddress ip) throws Exception {
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
