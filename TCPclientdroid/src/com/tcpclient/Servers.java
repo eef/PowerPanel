@@ -22,10 +22,11 @@ public class Servers {
 	private String tag = "Servers.java class";
 	
 	private int PORT = 2501;
+	int x = 0;
 	private InetAddress broadcastIP;
 	private List<Server> serverList = new ArrayList<Server>();
 	private int nextID;
-
+	private String[] serverInfo = null;
 	public Servers(WifiManager wifi) {
 
 		try {
@@ -51,28 +52,33 @@ public class Servers {
 	}
 
 	public String[] getServerInfo() {
-		String[] serverInfo = null;
-		int x = 0;
+		Log.d(tag, "starting getServerInfo()");
+		Log.d(tag, "set int");
 		Iterator<Server> server = serverList.iterator();
+		Log.d(tag, "created iterator");
 		while (server.hasNext()) {
+			Log.d(tag, "while getServerInfo()");
 			try {
-				serverInfo[x] = server.next().getInfo().toString();
-				x += 1;
+				Log.d(tag, "iterator item" + server.next().getInfo().toString());
+				serverInfo[serverInfo.length] = server.next().getInfo().toString();
+				x++;
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.d(tag, e.getMessage());
 			}					
 		}
 		return serverInfo;		
 	}
 
 	public void discover() throws Exception {
-
-		if (broadcastIP != null) {
+		Log.d(tag, "starting discover()");
+		InetAddress broadcastIP = InetAddress.getByName("192.168.0.255");
+		Log.d(tag, "created inetaddy with broadcast");
+		if (broadcastIP == null) {
 			Log.e("discovery", "shit the bed..");
 		}
 
 		try {
+			Log.d(tag, "trying discovery");
 			DatagramSocket clientSocket = new DatagramSocket();
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];

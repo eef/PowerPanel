@@ -36,10 +36,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class TCPclient extends ListActivity {
-
+	
+	
 	private String tag = "Main Activity ";
 	private TextView selection;
-	private String[] complist = mockComps();
+	private String[] complist = null;
 
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
@@ -48,8 +49,25 @@ public class TCPclient extends ListActivity {
 	private static final int SHUTDOWN_ID = Menu.FIRST + 3;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
 
+	
 	@Override
 	public void onCreate(Bundle icicle) {
+		Log.d(tag, "Starting oncreate()");
+		Servers serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
+		Log.d(tag, "created server object");
+		try {
+			Log.d(tag, "trying dicover");
+			serversobject.discover();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Log.d(tag, "starting getServerInfo()");
+		complist = serversobject.getServerInfo();
+		Log.d(tag, "finished discover()");
+	
+			
+			
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 		setListAdapter(new IconicAdapter());
@@ -143,26 +161,7 @@ public class TCPclient extends ListActivity {
 		this.finish();
 	}
 
-	private String[] mockComps() {
-		String[] mock_comp_list = {
-				"{'name' : 'will', 'id':'2', 'status':'ponline'}",
-				"{'name' : 'arthur', 'id':'1', 'status':'offline'}",
-				"{'name' : 'luke', 'id':'3', 'status':'online'}",
-				"{'name' : 'yer da', 'id':'4', 'status':'offline'}",
-				"{'name' : 'yer maw', 'id':'5', 'status':'online'}",
-				"{'name' : 'asdasdwqi', 'id':'6', 'status':'ponline'}",
-				"{'name' : 'oij98joij', 'id':'7', 'status':'offline'}",
-				"{'name' : 'bn97h9uih9', 'id':'8', 'status':'online'}",
-				"{'name' : 'h87', 'id':'9', 'status':'online'}",
-				"{'name' : 'oif92f9if', 'id':'10', 'status':'offline'}",
-				"{'name' : 'kief9', 'id':'11', 'status':'offline'}",
-				"{'name' : 'edfoiow', 'id':'12', 'status':'online'}",
-				"{'name' : 'wekfkw', 'id':'13', 'status':'ponline'}",
-				"{'name' : 'hf982ekfm', 'id':'14', 'status':'ponline'}",
-				"{'name' : 'kjef29fjo', 'id':'15', 'status':'offline'}",
-				"{'name' : 'kejf0239', 'id':'16', 'status':'ponline'}"};
-		return mock_comp_list;
-	}
+
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, ADD_ID, 0, "Add");
