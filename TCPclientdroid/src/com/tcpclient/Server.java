@@ -13,65 +13,53 @@ import org.json.JSONTokener;
 import android.util.Log;
 
 public class Server {
-	int serverID = -1;
-	String pkey,mac,servername = null;
+	private int serverID = -1;
+	String pKey,mac,hostname = null;
 	InetAddress serverIP = null;
 	
 	public Server(InetAddress serverIP) {
+		this.serverID = serverID;
 		this.serverIP = serverIP;
-		String pkey,mac,servername = null;
-		
 	}
-
-	public Server(InetAddress serverIP, String pkey, String servername){		
+	
+	public Server(int serverID, InetAddress serverIP) {
+		this.serverID = serverID;
 		this.serverIP = serverIP;
-		this.pkey = pkey;			
-		}
+	}
+	
+	public Server(int serverID, InetAddress serverIP, String pKey, String hostname){		
+		this.serverIP = serverIP;
+		this.pKey = pKey;
+		this.hostname = hostname;
+	}
+	
+	public boolean isPaired(){
+		if (pKey == null)
+			return false;
+		return true;	
+	}	
+	
+	public JSONObject getInfo() throws JSONException{
+		JSONObject object = (JSONObject) new JSONObject();
+		if (pKey == null)
+			object.put("pKey", pKey);
+		if (pKey == null)
+			object.put("mac", pKey);
+		if (pKey == null)
+			object.put("hostname", pKey);
+		if (pKey == null)
+			object.put("serverIP", pKey);
+		return object;
+	}
 	
 
-	public String doSend(String command) {
-		try {
-			DatagramSocket clientSocket = new DatagramSocket();
-			Log.d("broadcast", "1");
-			// InetAddress IPAddress =
-			// InetAddress.getByName("broadcastIP.toString());
-			Log.d("broadcast", "2");
-			byte[] sendData = new byte[1024];
-			byte[] receiveData = new byte[1024];
-			sendData = command.getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(sendData,
-					sendData.length, serverIP, 2501);
-			clientSocket.send(sendPacket);
-			DatagramPacket receivePacket = new DatagramPacket(receiveData,
-					receiveData.length);
-			clientSocket.receive(receivePacket);
-			String modifiedSentence = new String(receivePacket.getData());
-			clientSocket.close();
-			return modifiedSentence.trim();
-		} catch (UnknownHostException e) {
-			return "Unknown host: " + e.getMessage();
-		} catch (IOException e) {
-			return "IO Exception: " + e.getMessage();
-		}
+	
+	public void setServerID (int serverID){
+		this.serverID = serverID;
 	}
-
-	public String pair() {
-		try {
-			String reply = doSend("pair");
-			JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
-			this.mac = object.getString("mac");
-			this.pkey = object.getString("pkey");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return pkey;
+	
+	public int  getServerID (){
+		return this.serverID;
 	}
-
-	public boolean authenticate(InetAddress ip, String pkey) {
-		/*if ((ip.getHostAddress().length() > 0) && (pkey.length() > 0)) {
-			authenticated = true;
-		}
-		return authenticated;*/
-		return false;
-	}
+	
 }

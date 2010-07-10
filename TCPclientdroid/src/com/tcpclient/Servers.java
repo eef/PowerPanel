@@ -5,13 +5,23 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
 public class Servers {
+	
+	private int PORT = 2501;
 	private InetAddress broadcastIP;
+	private List<Server> serverList = new ArrayList<Server>();
+	private int nextID;
 	
 	public Servers(WifiManager wifi) {
 
@@ -30,7 +40,16 @@ public class Servers {
 		}
 	}
 	
-	public void addServer(InetAddress newServer){
+	public void addToServerList(InetAddress newServerIP){
+		
+		Server bogla = new Server(nextID, newServerIP);
+		nextID += 1;		
+		serverList.add(bogla);
+	}
+	
+	public String getServerInfo(InetAddress[] serverIPs){	
+		
+		
 		
 	}
 	
@@ -61,7 +80,7 @@ public class Servers {
 				
 				//iplist.add(receivePacket.getAddress());
 				
-				addServer(receivePacket.getAddress());
+				addToServerList(receivePacket.getAddress());
 				
 				Log.e("discovery", (receivePacket.getAddress().toString()));
 				Thread.sleep(500);
@@ -79,8 +98,53 @@ public class Servers {
 		}
 	}
 	
+	public boolean pair() {		
+		return false;		
+	}
 	
+	public boolean pair(Server server) {
+		try {
+			String reply = doSend("pair", server.serverIP);
+			JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
+			if (object.getString("paired").equals("yes")){
+				//TODO: create setters/getters?
+				server.mac = object.getString("mac");
+				server.pKey = object.getString("pkey");
+				//call 'sync' method
+				return true;
+			}
+			return false;
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return false;
+		} catch (UnknownHostException ue) {
+		 	return false;
+		} catch (Exception euz) {
+			return false;
+		}	
+	}
 	
-	
+	public String doSend(String command, InetAddress ip) throws Exception {
+		try {
+			DatagramSocket clientSocket = new DatagramSocket();
+			InetAddress IPAddress = ip;
+			byte[] sendData = new byte[1024];
+			byte[] receiveData = new byte[1024];
+			sendData = command.getBytes();
+			DatagramPacket sendPacket = new DatagramPacket(sendData,
+					sendData.length, IPAddress, PORT);
+			clientSocket.send(sendPacket);
+			DatagramPacket receivePacket = new DatagramPacket(receiveData,
+					receiveData.length);
+			clientSocket.receive(receivePacket);
+			String modifiedSentence = new String(receivePacket.getData());
+			clientSocket.close();
+			return modifiedSentence.trim();
+		} catch (UnknownHostException e) {
+			return "Unknown host: " + e.getMessage();
+		} catch (IOException e) {
+			return "IO Exception: " + e.getMessage();
+		}
+	}
 
 }
