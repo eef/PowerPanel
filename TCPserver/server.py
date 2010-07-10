@@ -41,7 +41,7 @@ class  AssHandler(object):
         
     def handle_pair(self):
         print "pair request recev"
-        res = "{ 'paired' : 'yes', 'pkey':'123456789','mac':'00-1F-D0-5C-3A-BB',}"
+        res = "{ 'pairaccepted' : 'yes', 'pkey':'123456789','mac':'00-1F-D0-5C-3A-BB',}"
         return res
         
     def handle(self, type, *args, **kwargs):
