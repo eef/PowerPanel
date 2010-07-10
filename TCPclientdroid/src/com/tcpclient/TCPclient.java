@@ -128,14 +128,14 @@ public class TCPclient extends ListActivity {
 
 	class IconicAdapter extends ArrayAdapter {
 		IconicAdapter() {
-			super(TCPclient.this, R.layout.row, test);
+			super(TCPclient.this, R.layout.row, complist);
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
 			LayoutInflater inflater = getLayoutInflater();
 			View row = inflater.inflate(R.layout.row, null);
 			TextView label = (TextView) row.findViewById(R.id.label);
-
+			Log.d(tag, "jjjjjjjjjjjjjjjjjjjjjjj " + Integer.toString(position));
 			String item = complist.get(position);
 
 			try {
