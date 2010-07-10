@@ -51,6 +51,11 @@ public class Servers {
 		serverList.add(bogla);
 	}
 
+	public void setServername(int serverID, String servername){
+		getServer( serverID).setName(servername);
+		
+	}
+	
 	public List<String> getServerInfo() {
 		Log.d(tag, "starting getServerInfo()");
 		Log.d(tag, "set int");
@@ -118,6 +123,7 @@ public class Servers {
 	}
 
 	public boolean pair(List<Integer> serverIDs) {
+		//TODO: make success return proper info
 		boolean paired = false;
 		try {
 			Iterator<Integer> serverID = serverIDs.iterator();
