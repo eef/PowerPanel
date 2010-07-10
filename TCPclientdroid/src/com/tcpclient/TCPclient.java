@@ -1,9 +1,11 @@
 package com.tcpclient;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -40,8 +42,8 @@ public class TCPclient extends ListActivity {
 	
 	private String tag = "Main Activity ";
 	private TextView selection;
-	private String[] complist = null;
-
+	private List<String> complist = new ArrayList<String>();
+	private List<String> test = new ArrayList<String>();
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
@@ -53,6 +55,7 @@ public class TCPclient extends ListActivity {
 	@Override
 	public void onCreate(Bundle icicle) {
 		Log.d(tag, "Starting oncreate()");
+		test.add(0, "{'name':'sdas', 'id':'1', 'status':'online'}");
 		Servers serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
 		Log.d(tag, "created server object");
 		try {
@@ -76,7 +79,7 @@ public class TCPclient extends ListActivity {
 	}
 
 	public void onListItemClick(ListView parent, View v, int position, long id) {
-		String item = complist[position];
+		String item = complist.get(position);
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
 			makeToast("Name: " + object.getString("name") + "\nID: " + object.getString("id"));
@@ -125,7 +128,7 @@ public class TCPclient extends ListActivity {
 
 	class IconicAdapter extends ArrayAdapter {
 		IconicAdapter() {
-			super(TCPclient.this, R.layout.row, complist);
+			super(TCPclient.this, R.layout.row, test);
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
@@ -133,7 +136,7 @@ public class TCPclient extends ListActivity {
 			View row = inflater.inflate(R.layout.row, null);
 			TextView label = (TextView) row.findViewById(R.id.label);
 
-			String item = complist[position];
+			String item = complist.get(position);
 
 			try {
 				JSONObject object = (JSONObject) new JSONTokener(item)

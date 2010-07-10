@@ -25,8 +25,8 @@ public class Servers {
 	int x = 0;
 	private InetAddress broadcastIP;
 	private List<Server> serverList = new ArrayList<Server>();
+	private List<String> serverInfo = new ArrayList<String>();
 	private int nextID;
-	private String[] serverInfo = null;
 	public Servers(WifiManager wifi) {
 
 		try {
@@ -51,7 +51,7 @@ public class Servers {
 		serverList.add(bogla);
 	}
 
-	public String[] getServerInfo() {
+	public List<String> getServerInfo() {
 		Log.d(tag, "starting getServerInfo()");
 		Log.d(tag, "set int");
 		Iterator<Server> server = serverList.iterator();
@@ -59,13 +59,13 @@ public class Servers {
 		while (server.hasNext()) {
 			Log.d(tag, "while getServerInfo()");
 			try {
-				Log.d(tag, "iterator item" + server.next().getInfo().toString());
-				serverInfo[serverInfo.length] = server.next().getInfo().toString();
+				serverInfo.add(server.next().getInfo().toString());
 				x++;
 			} catch (JSONException e) {
 				Log.d(tag, e.getMessage());
 			}					
 		}
+		Log.d(tag, "soqwdjiosidjqwoisdjoqidjij" + Integer.toString(serverInfo.size()));
 		return serverInfo;		
 	}
 

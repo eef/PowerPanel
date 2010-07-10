@@ -17,6 +17,7 @@ public class Server {
 	String pKey, mac, hostname, name = null;
 	String status = "online";
 	InetAddress serverIP = null;
+	
 
 	public Server(InetAddress serverIP) {
 		this.serverID = serverID;
@@ -47,15 +48,13 @@ public class Server {
 	public JSONObject getInfo() throws JSONException {
 		JSONObject object = new JSONObject();
 		if (serverID != -1)
-			object.put("id", serverID);
+			object.put("id", Integer.toString(serverID));
 		if (pKey != null)
 			object.put("pKey", pKey);
 		if (mac != null)
 			object.put("mac", mac);
 		if (hostname != null)
 			object.put("hostname", hostname);
-		if (serverIP != null)
-			object.put("serverIP", serverIP);
 		if (name != null)
 			object.put("name", name);
 		if (status != null)
@@ -82,7 +81,7 @@ public class Server {
 
 	private void setHostName() {		
 		if (serverIP != null)
-			serverIP.getHostName();
+			this.name = serverIP.getHostName();
 	}
 
 	public void setStatus(String string) {
