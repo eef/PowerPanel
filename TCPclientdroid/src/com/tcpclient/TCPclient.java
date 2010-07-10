@@ -108,7 +108,10 @@ public class TCPclient extends ListActivity {
 		case DELETE_ID:
 			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-			makeToast("Delete");
+			List<Integer> comps =  new ArrayList<Integer>();
+			comps.add(info.position);
+			pairReq(comps);
+			makeToast("Paring device...");
 			break;
 		case SHUTDOWN_ID:
 			AdapterView.AdapterContextMenuInfo info1 = (AdapterView.AdapterContextMenuInfo) item
@@ -125,6 +128,26 @@ public class TCPclient extends ListActivity {
 
 		return (super.onOptionsItemSelected(item));
 	}
+	
+	private void pairReq(List<Integer> comps) {
+		Iterator compIt = comps.iterator();
+		List<Integer> idList = new ArrayList<Integer>();
+		while(compIt.hasNext()) {
+			String item = complist.get((Integer) compIt.next());
+			try {
+				JSONObject object = (JSONObject) new JSONTokener(item)
+				.nextValue();
+				idList.add(object.getInt("id"));
+				makeToast("Pairing " + object.getString("name"));
+			} catch (JSONException e) {
+				Log.e(tag, e.getMessage());
+			}
+		}
+		Servers serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
+		if(serversobject.pair(idList)) {
+			makeToast("Servers has been paired");
+		}
+	}
 
 	class IconicAdapter extends ArrayAdapter {
 		IconicAdapter() {
@@ -135,7 +158,6 @@ public class TCPclient extends ListActivity {
 			LayoutInflater inflater = getLayoutInflater();
 			View row = inflater.inflate(R.layout.row, null);
 			TextView label = (TextView) row.findViewById(R.id.label);
-			Log.d(tag, "jjjjjjjjjjjjjjjjjjjjjjj " + Integer.toString(position));
 			String item = complist.get(position);
 
 			try {
