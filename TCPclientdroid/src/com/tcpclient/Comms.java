@@ -12,33 +12,35 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.net.DhcpInfo;
 import android.util.Log;
 
 public class Comms {
-	
-	private List<InetAddress> iplist=new ArrayList<InetAddress>();	
+
+	private List<InetAddress> iplist = new ArrayList<InetAddress>();
 	private InetAddress broadcastIP;
-	
+	private String names = "";
+
 	public Comms(DhcpInfo dhcp) {
-		
+
 		try {
-			
+
 			if (dhcp == null) {
-			      Log.d("shit", "Could not get dhcp info");
+				Log.d("shit", "Could not get dhcp info");
 			}
 
 			int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
 			byte[] quads = new byte[4];
 			for (int k = 0; k < 4; k++)
-		    quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+				quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
 			broadcastIP = InetAddress.getByAddress(quads);
-		    
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void main(String[] args) {
 
 	}
@@ -62,14 +64,14 @@ public class Comms {
 		return null;
 	}
 
-	public void discover() throws Exception {	
-		
-		if (broadcastIP != null){
+	public void discover() throws Exception {
+
+		if (broadcastIP != null) {
 			Log.e("discovery", "shit the bed..");
 		}
-		
-		try{
-			DatagramSocket clientSocket = new DatagramSocket();			
+
+		try {
+			DatagramSocket clientSocket = new DatagramSocket();
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
 			sendData = "hello".getBytes();
@@ -78,61 +80,73 @@ public class Comms {
 			clientSocket.send(sendPacket);
 			DatagramPacket receivePacket = new DatagramPacket(receiveData,
 					receiveData.length);
-			
-			clientSocket.setSoTimeout(5000); //sets how long reicive() blocks for once there are no new packates
+
+			clientSocket.setSoTimeout(1000); // sets how long reicive() blocks
+												// for once there are no new
+												// packates
 			long t = System.currentTimeMillis();
 			long end = t + 3000;
-			while(System.currentTimeMillis() < end) {
+			while (System.currentTimeMillis() < end) {
 				clientSocket.receive(receivePacket);
 				iplist.add(receivePacket.getAddress());
 				Log.e("discovery", (receivePacket.getAddress().toString()));
 				Thread.sleep(500);
-				//modifiedSentence = modifiedSentence + receivePacket.getAddress().toString();				
-				Log.e("discovery1", String.valueOf(iplist.size()));	
-			}			
+				Log.e("discovery1", String.valueOf(iplist.size()));
+			}
 			clientSocket.close();
-			
+
 		} catch (UnknownHostException e) {
 			Log.e("recieved:", "UnknownHostException:" + e.toString());
-			
+
 		} catch (IOException e) {
-			Log.e("recieved:","IOException:"+ e.toString());
+			Log.e("recieved:", "IOException:" + e.toString());
 		}
 	}
-	
-	public String showServerAddresses(){	//Returns a string with all discovered servers
-		Iterator<InetAddress> iterator=iplist.iterator();
-		String addresses = "";		
-		while(iterator.hasNext()){			
-			addresses = " " + iterator.next().toString();
-			}		
-		return addresses;
+
+	public String showServerAddresses() { // Returns a string with all
+											// discovered servers
+		Log.d("showServerAddresses 1", "1");
+		Iterator<InetAddress> iterator = iplist.iterator();
+		Log.d("showServerAddresses 2", "2");
+		while (iterator.hasNext()) {
+			try {
+				String name = doSend("info", iterator.next().toString().replace("/", ""));
+				Log.d("showServerAddresses Iterator", name);
+				names += "'" + name + "',";
+			} catch (Exception e) {
+				Log.d("get info", e.getMessage());
+			}
+		}
+		Log.d("names", names.substring(0, names.length() - 1));
+		return names.substring(0, names.length() - 1);
 	}
-	
-	public List<InetAddress> getServerAddresses(){ //returns list of inetaddress objects for this instance
+
+	public List<InetAddress> getServerAddresses() { // returns list of
+													// inetaddress objects for
+													// this instance
 		return iplist;
 	}
-	
-	public InetAddress getBroadcast(){ //returns this instances BC address
+
+	public InetAddress getBroadcast() { // returns this instances BC address
 		return broadcastIP;
 	}
-	
-	public String doSend(String command) throws Exception {
+
+	public String doSend(String command, String ip) throws Exception {
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress[] = InetAddress.getAllByName("192.168.0.255");
+			InetAddress IPAddress = InetAddress.getByName(ip);
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
 			sendData = command.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
-					sendData.length, IPAddress[0], 2501);
+					sendData.length, IPAddress, 2501);
 			clientSocket.send(sendPacket);
 			DatagramPacket receivePacket = new DatagramPacket(receiveData,
 					receiveData.length);
 			clientSocket.receive(receivePacket);
 			String modifiedSentence = new String(receivePacket.getData());
 			clientSocket.close();
-			return modifiedSentence;
+			return modifiedSentence.trim();
 		} catch (UnknownHostException e) {
 			return "Unknown host: " + e.getMessage();
 		} catch (IOException e) {

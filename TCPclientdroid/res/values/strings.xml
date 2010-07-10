@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Resource string: hello</string>
-    <string name="app_name">TCPclient</string>
+		<string name="app_name">TCPclient</string>
+		<string name="ok">OK</string>
+		<string name="cancel">Cancel</string>
+		<string name="add_title">Add Constant</string>
+		<string name="delete_title">Delete Constant: Are You Sure?</string>
+		<string name="shutdown_title">Shutdown Computer: Are You Sure?</string>
+		<string name="cancel_title">Cancel Shutdown: Are You Sure?</string>
 </resources>

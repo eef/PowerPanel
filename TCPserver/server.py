@@ -28,9 +28,12 @@ class  AssHandler(object):
         
     def handle_reboot(self):
         os.system("shutdown /r")
+        
+    def handle_info(self):
+        return "panima"
 
     def handle_hibernate(self):
-		os.system("shutdown /h")
+        os.system("shutdown /h")
 
     def handle_hello(self):
         print "sending" + str(HOST) +":"+ str(PORT)

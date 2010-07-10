@@ -10,9 +10,9 @@ import android.hardware.SensorManager;
 import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-private static final String DATABASE_NAME="db";
-public static final String COMPUTERNAME="title";
-public static final String VALUE="value";
+private static final String DATABASE_NAME="shutdown";
+public static final String COMPUTERNAME="name";
+public static final String LAST_IP="last_ip";
 private static final String tag = null;
 
 public DatabaseHelper(Context context) {
@@ -21,30 +21,20 @@ public DatabaseHelper(Context context) {
 
 @Override
 public void onCreate(SQLiteDatabase db) {
-	db.execSQL("CREATE TABLE constants (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, value REAL);");
+	db.execSQL("CREATE TABLE computers (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, last_ip TEXT);");
 	
 	ContentValues cv=new ContentValues();
 	
 	// add some mock data for the moment
-	Log.d(tag, "==========12============");
-	cv.put(COMPUTERNAME, "Amber");
-	Log.d(tag, "==========22============");
-	cv.put(VALUE, 123);
-	Log.d(tag, "==========32============");
-	db.insert("constants", COMPUTERNAME, cv);
-	Log.d(tag, "==========42============");
-	cv.put(COMPUTERNAME, "Arthur");
-	Log.d(tag, "==========52============");
-	cv.put(VALUE, 132);
-	Log.d(tag, "==========62============");
-	db.insert("constants", COMPUTERNAME, cv);
-	Log.d(tag, "==========72============");
+	cv.put(COMPUTERNAME, "pamina");
+	cv.put(LAST_IP, "192.168.0.100");
+	db.insert("computers", COMPUTERNAME, cv);
 }
 
 @Override
 public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	android.util.Log.w("Constants", "Database is going to be updated you will lose all data.");
-	db.execSQL("DROP TABLE IF EXISTS constants");
+	db.execSQL("DROP TABLE IF EXISTS computers");
 	onCreate(db);
 }
 }
