@@ -44,13 +44,18 @@ public class Servers {
 	}
 
 	public void addToServerList(InetAddress newServerIP) {
-
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
 		serverList.add(bogla);
 	}
 
-	public String getServerInfo(InetAddress[] serverIPs) {
+	public String getServerInfo(int[] ) {
+		JSONObject serverInfo = new JSONObject();
+		Iterator<Server> server = serverList.iterator();
+		while (server.hasNext()) {
+			serverInfo.put((server.next().getInfo()).toString();
+			if (server.isPaired()){
+				return true;
 
 		return null;
 	}
@@ -100,27 +105,26 @@ public class Servers {
 		}
 	}
 
-	public boolean pair() {
-		
-		return false;
-	}
-
-	public boolean pair(int serverID) {
+	public boolean pair(List<Integer> serverIDs) {
 		try {
-			Server server = getServer(serverID);
-			if (server.isPaired()){
-				return true;
-			}else{
-				String reply = doSend("pair", server.serverIP);
-				JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
-				if (object.getString("paired").equals("yes")) {
-					// TODO: create setters/getters?
-					server.setMAC(object.getString("mac"));
-					server.setPKey(object.getString("pkey"));
-					// call 'sync' method
+			Iterator<Integer> serverID = serverIDs.iterator();
+			while (serverID.hasNext()) {
+				Server server = getServer(serverID.next());
+				if (server.isPaired()){
 					return true;
+				}else{
+					String reply = doSend("pair", server.serverIP);
+					JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
+					if (object.getString("pairaccepted").equals("yes")) {
+						// TODO: create setters/getters?
+						server.setMAC(object.getString("mac"));
+						server.setPKey(object.getString("pkey"));
+						// call 'sync' method
+						return true;
+					}
 				}
 			}
+
 			return false;
 			
 		} catch (JSONException e) {
