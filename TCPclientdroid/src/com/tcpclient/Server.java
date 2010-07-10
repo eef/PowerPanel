@@ -23,12 +23,14 @@ public class Server {
 		this.serverID = serverID;
 		this.serverIP = serverIP;
 		this.setHostName();
+		this.setName("");
 	}
 
 	public Server(int serverID, InetAddress serverIP) {		
 		this.serverID = serverID;
 		this.serverIP = serverIP;
 		this.setHostName();
+		this.setName(""); 
 	}
 
 	public Server(int serverID, InetAddress serverIP, String pKey,
@@ -37,6 +39,7 @@ public class Server {
 		this.pKey = pKey;
 		this.hostname = hostname;
 		this.setHostName();
+		this.setName("");
 	}
 
 	public boolean isPaired() {
@@ -79,11 +82,16 @@ public class Server {
 		this.pKey = string; 			
 	}
 
-	private void setHostName() {		
+	public void setHostName() {		
 		if (serverIP != null)
+			this.hostname = serverIP.getHostName();
+	}
+	
+	public void setName(String name) {		
+		if (name.equals(""))
 			this.name = serverIP.getHostName();
 	}
-
+	
 	public void setStatus(String string) {
 		this.status = string;
 		
