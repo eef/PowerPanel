@@ -3,6 +3,7 @@
 	<string name="app_name">Shutdown</string>
 	<string name="hello">Shutdown</string>
     <string name="cancel">Cancel</string>
+    <string name="cancel_shutdown">Cancel shutdown: Are you sure?</string>
     <string name="ok">Ok</string>
     <string name="shutdown">Shutdown Computer: Are you sure?</string>
 </resources>
