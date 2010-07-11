@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Resource string: hello</string>
-    <string name="app_name">TCPclient</string>
+	<string name="app_name">Shutdown</string>
+	<string name="hello">Shutdown</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">Ok</string>
+    <string name="shutdown">Shutdown Computer: Are you sure?</string>
 </resources>
