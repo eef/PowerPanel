@@ -6,4 +6,5 @@
     <string name="cancel_shutdown">Cancel shutdown: Are you sure?</string>
     <string name="ok">Ok</string>
     <string name="shutdown">Shutdown Computer: Are you sure?</string>
+    <string name="ponline">#00ff00</string>
 </resources>

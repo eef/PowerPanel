@@ -50,8 +50,9 @@ public class Servers {
 	public void addToServerList(InetAddress newServerIP) {
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
-
-		serverList.add(bogla);
+		if(!serverList.contains(bogla)) {
+			serverList.add(bogla);
+		}
 	}
 
 	public void setServername(int serverID, String servername) {
@@ -147,7 +148,7 @@ public class Servers {
 					// TODO: create setters/getters?
 					server.setMAC(object.getString("mac"));
 					server.setPKey(object.getString("pkey"));
-					server.setStatus("paired");
+					server.setStatus("ponline");
 					// call 'sync' method
 					paired = true;
 				}

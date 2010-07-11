@@ -43,7 +43,7 @@ public class Server {
 	}
 
 	public boolean isPaired() {
-		if (status.equals("paired"))
+		if (status.equals("ponline"))
 			return true;
 		return false;
 	}

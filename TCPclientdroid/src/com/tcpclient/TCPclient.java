@@ -67,11 +67,12 @@ public class TCPclient extends ListActivity {
 			e.printStackTrace();
 		}
 		Log.d(tag, "starting getServerInfo()");
-		complist = serversobject.getServerInfo();
+		
 		Log.d(tag, "finished discover()");
 
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
+		complist = serversobject.getServerInfo();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
 		selection = (TextView) findViewById(R.id.selection);
@@ -88,6 +89,13 @@ public class TCPclient extends ListActivity {
 		}
 
 	}
+	
+	private void refreshList() {
+		complist = serversobject.getServerInfo();
+		setListAdapter(new IconicAdapter());
+		registerForContextMenu(getListView());
+	}
+	
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -96,7 +104,7 @@ public class TCPclient extends ListActivity {
 				.setAlphabeticShortcut('a');
 		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
 				.setAlphabeticShortcut('b');
-		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "PAIR")
+		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair")
 				.setAlphabeticShortcut('c');
 	}
 
@@ -118,7 +126,7 @@ public class TCPclient extends ListActivity {
 			AdapterView.AdapterContextMenuInfo info3 = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
 
-			makeToast("Cancel " + info3.id);
+			cancel(info3.position);
 			break;
 		}
 
@@ -136,6 +144,8 @@ public class TCPclient extends ListActivity {
 		}
 		serversobject.pair(id);
 		makeToast("Servers has been paired");
+		complist.clear();
+		refreshList();
 	}
 
 	private void processShutdown(int id) {
@@ -153,7 +163,6 @@ public class TCPclient extends ListActivity {
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
 			id = object.getInt("id");
-			makeToast("Shutdown " + object.getString("name"));
 		} catch (JSONException e) {
 			Log.e(tag, e.getMessage());
 		}
@@ -181,7 +190,6 @@ public class TCPclient extends ListActivity {
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
 			id = object.getInt("id");
-			makeToast("Shutdown " + object.getString("name"));
 		} catch (JSONException e) {
 			Log.e(tag, e.getMessage());
 		}
