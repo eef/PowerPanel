@@ -112,7 +112,7 @@ public class TCPclient extends ListActivity {
 		case SHUTDOWN_ID:
 			AdapterView.AdapterContextMenuInfo info1 = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-			makeToast("Shutdown");
+			shutdown(info1.position);
 			break;
 		case CANCEL_ID:
 			AdapterView.AdapterContextMenuInfo info3 = (AdapterView.AdapterContextMenuInfo) item
@@ -136,6 +136,40 @@ public class TCPclient extends ListActivity {
 		}
 		serversobject.pair(id);
 		makeToast("Servers has been paired");
+	}
+
+	private void processShutdown(int id) {
+
+		makeToast("Shutdown " + Integer.toString(id));
+
+	}
+
+	private void shutdown(int comp) {
+		String item = complist.get(comp);
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+			makeToast("Shutdown " + object.getString("name"));
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
+		}
+		if (id >= 0) {
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.shutdown)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									processShutdown(id);
+								}
+							})
+					.setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
 	}
 
 	class IconicAdapter extends ArrayAdapter {
