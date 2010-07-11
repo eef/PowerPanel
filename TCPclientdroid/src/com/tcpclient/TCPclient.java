@@ -38,8 +38,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class TCPclient extends ListActivity {
-	
-	
+
 	private String tag = "Main Activity ";
 	private TextView selection;
 	private List<String> complist = new ArrayList<String>();
@@ -50,15 +49,15 @@ public class TCPclient extends ListActivity {
 	private static final int DELETE_ID = Menu.FIRST + 2;
 	private static final int SHUTDOWN_ID = Menu.FIRST + 3;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
-	
+	private int id = 0;
 	Servers serversobject = null;
 
-	
 	@Override
 	public void onCreate(Bundle icicle) {
 		Log.d(tag, "Starting oncreate()");
 		test.add(0, "{'name':'sdas', 'id':'1', 'status':'online'}");
-		serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
+		serversobject = new Servers(
+				(WifiManager) getSystemService(Context.WIFI_SERVICE));
 		Log.d(tag, "created server object");
 		try {
 			Log.d(tag, "trying dicover");
@@ -70,9 +69,7 @@ public class TCPclient extends ListActivity {
 		Log.d(tag, "starting getServerInfo()");
 		complist = serversobject.getServerInfo();
 		Log.d(tag, "finished discover()");
-	
-			
-			
+
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 		setListAdapter(new IconicAdapter());
@@ -84,12 +81,12 @@ public class TCPclient extends ListActivity {
 		String item = complist.get(position);
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
-			makeToast("Name: " + object.getString("name") + "\nID: " + object.getString("id"));
+			makeToast("Name: " + object.getString("name") + "\nID: "
+					+ object.getString("id"));
 		} catch (JSONException e) {
 			Log.e(tag, "failed to serialize select item");
 		}
-		
-		
+
 	}
 
 	@Override
@@ -110,10 +107,7 @@ public class TCPclient extends ListActivity {
 		case DELETE_ID:
 			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-			List<Integer> comps =  new ArrayList<Integer>();
-			comps.add(info.position);
-			pairReq(comps);
-			makeToast("Paring device...");
+			pairReq(info.position);
 			break;
 		case SHUTDOWN_ID:
 			AdapterView.AdapterContextMenuInfo info1 = (AdapterView.AdapterContextMenuInfo) item
@@ -130,23 +124,17 @@ public class TCPclient extends ListActivity {
 
 		return (super.onOptionsItemSelected(item));
 	}
-	
-	private void pairReq(List<Integer> comps) {
-		Iterator compIt = comps.iterator();
-		List<Integer> idList = new ArrayList<Integer>();
-		while(compIt.hasNext()) {
-			String item = complist.get((Integer) compIt.next());
-			try {
-				JSONObject object = (JSONObject) new JSONTokener(item)
-				.nextValue();
-				idList.add(object.getInt("id"));
-				makeToast("Pairing " + object.getString("name"));
-			} catch (JSONException e) {
-				Log.e(tag, e.getMessage());
-			}
+
+	private void pairReq(int comp) {
+		String item = complist.get(comp);
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+			makeToast("Pairing " + object.getString("name"));
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
 		}
-		makeToast("idList size: " + Integer.toString(idList.size()));
-		serversobject.pair(idList);
+		serversobject.pair(id);
 		makeToast("Servers has been paired");
 	}
 
@@ -186,8 +174,6 @@ public class TCPclient extends ListActivity {
 		super.onStop();
 		this.finish();
 	}
-
-
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, ADD_ID, 0, "Add");
