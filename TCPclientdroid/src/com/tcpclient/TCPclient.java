@@ -54,8 +54,6 @@ public class TCPclient extends ListActivity {
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		Log.d(tag, "Starting oncreate()");
-		test.add(0, "{'name':'sdas', 'id':'1', 'status':'online'}");
 		serversobject = new Servers(
 				(WifiManager) getSystemService(Context.WIFI_SERVICE));
 		Log.d(tag, "created server object");
@@ -75,7 +73,6 @@ public class TCPclient extends ListActivity {
 		complist = serversobject.getServerInfo();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
-		selection = (TextView) findViewById(R.id.selection);
 	}
 
 	public void onListItemClick(ListView parent, View v, int position, long id) {
@@ -91,8 +88,8 @@ public class TCPclient extends ListActivity {
 	}
 
 	private void refreshList() {
+		complist.clear();
 		complist = serversobject.getServerInfo();
-		serversobject.checkForOffline();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
 	}
@@ -144,6 +141,7 @@ public class TCPclient extends ListActivity {
 		}
 		serversobject.pair(id);
 		makeToast("Servers has been paired");
+		refreshIPs();
 		refreshList();
 	}
 

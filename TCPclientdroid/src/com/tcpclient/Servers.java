@@ -31,6 +31,7 @@ public class Servers {
 	private Iterator<Integer> serverID = null;
 	private Server server = null;
 	private List<Server> oldServerList = new ArrayList<Server>();
+	private String status = new String();
 
 	public Servers(WifiManager wifi) {
 
@@ -53,16 +54,20 @@ public class Servers {
 		boolean server = getServer(newServerIP.toString());
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
+		serverList.add(bogla);
 		if(!server) {
-			serverList.add(bogla);
+			Log.d(tag, "arg2");
 			oldServerList.add(bogla);
+		} else {
+			Log.d(tag, "arg");
 		}
 	}
 	
 	public void checkForOffline() {
 		Log.d(tag, "Starting checkoffline");
 		List<String> serverInfo = this.serverInfo;
-		Log.d(tag, "00000000000 " + Integer.toString(this.serverList.size()));
+		Log.d(tag, "checkoffline serverList size: " + Integer.toString(this.serverList.size()));
+		Log.d(tag, "checkoffline oldServerList size: " + Integer.toString(this.oldServerList.size()));
 		Iterator<String> serverInfoIt = serverInfo.iterator();
 		while(serverInfoIt.hasNext()) {
 			Log.d(tag, "Starting checkoffline iterator");
@@ -90,7 +95,8 @@ public class Servers {
 	}
 	
 	private boolean getServer(String serverIP) {
-		Log.d(tag, "onrefresh " + Integer.toString(oldServerList.size()));
+		Log.d(tag, "onrefresh serverList size: " + Integer.toString(this.serverList.size()));
+		Log.d(tag, "onrefresh oldServerList size: " + Integer.toString(this.oldServerList.size()));
 		have = false;
 		Iterator<Server> server = oldServerList.iterator();
 		while (server.hasNext()) {
@@ -118,18 +124,60 @@ public class Servers {
 		Iterator<Server> server = oldServerList.iterator();
 		Log.d(tag, "created iterator");
 		while (server.hasNext()) {
+			Server current_server = server.next();
+			Log.d(tag, "getServerInfo serverList size: " + Integer.toString(this.serverList.size()));
+			Log.d(tag, "getServerInfo oldServerList size: " + Integer.toString(this.oldServerList.size()));
 			Log.d(tag, "while getServerInfo()");
 			try {
-				serverInfo.add(server.next().getInfo().toString());
+				String current_server_status = checkStatus(current_server);
+				Log.d(tag, "Returned status: " + current_server_status);
+				current_server.setStatus(current_server_status);
+				serverInfo.add(current_server.getInfo().toString());
 				x++;
 			} catch (JSONException e) {
 				Log.d(tag, e.getMessage());
 			}
 		}
-		Log.d(tag, "soqwdjiosidjqwoisdjoqidjij"
-				+ Integer.toString(serverInfo.size()));
+		Log.d(tag, "serverinfo serverList size: " + Integer.toString(this.serverList.size()));
+		Log.d(tag, "serverinfo oldServerList size: " + Integer.toString(this.oldServerList.size()));
 		return serverInfo;
 	}
+	
+	private String checkStatus(Server current_server) {
+		Log.d(tag, "checkStatus serverList size: " + Integer.toString(this.serverList.size()));
+		Log.d(tag, "checkStatus oldServerList size: " + Integer.toString(this.oldServerList.size()));
+		Iterator<Server> servers = serverList.iterator();
+		if(serverList.size() > 0) {
+			while(servers.hasNext()) {
+				Server current_server_list = servers.next();
+				Log.d(tag, "current_server checkstatus if " + current_server.hostname);
+				Log.d(tag, "Hostname checkstatus if " + current_server_list.hostname);
+				if(current_server.hostname.equals(current_server_list.hostname)) {
+					Log.d(tag, "current_server.getServerID() " + Integer.toString(current_server.getServerID()));
+					Log.d(tag, "current_server_list.getServerID() " + Integer.toString(current_server_list.getServerID()));
+					current_server_list.setServerID(current_server.getServerID());
+					Log.d(tag, "current_server.getServerID() after set " + Integer.toString(current_server.getServerID()));
+					Log.d(tag, "current_server_list.getServerID() after set " + Integer.toString(current_server_list.getServerID()));
+					if(current_server.equals(current_server_list)) {
+						Log.d(tag, "current_server.equals(current_server_list)");
+					}
+					Log.d(tag, "Hostnames match it is online");
+					if(current_server.isPaired()) {
+						Log.d(tag, "Device is paired with " + current_server.hostname);
+						status = "ponline";
+					} else {
+						Log.d(tag, "Server ["+current_server.hostname+"] is online but not paired");
+						status = "online";
+					}
+				}
+			}
+		} else {
+			Log.d(tag, "Server ["+current_server.hostname+"] is offline");
+			status = "offline";
+		}
+		return status;
+	}
+	
 
 	public void discover() throws Exception {
 		serverList.clear();
@@ -228,19 +276,21 @@ public class Servers {
 	}
 	
 	private Server getServer(int serverID) {
-		Log.d(tag, "test");
-		Log.d(tag, Integer.toString(oldServerList.size()));
-		Iterator<Server> server = oldServerList.iterator();
-		while (server.hasNext()) {
-			Server current_server = server.next();
+		Log.d(tag, "serverinfo serverList size: " + Integer.toString(this.serverList.size()));
+		Log.d(tag, "serverinfo oldServerList size: " + Integer.toString(this.oldServerList.size()));
+		Iterator<Server> servers = oldServerList.iterator();
+		if(servers.hasNext()) {
+			Log.d(tag, "getServer has next");
+		}
+		while (servers.hasNext()) {
+			Server current_server = servers.next();
+			Log.d(tag, "Current server getServer() hostname " + current_server.hostname);
+			Log.d(tag, "Current server getServer() serverID " + current_server.getServerID());
 			if (current_server.getServerID() == serverID) {
-
-				Log.d(tag, "test 2" + current_server.getServerID() + serverID);
 				return current_server;
 			}
 		}
-		Log.d("test", "wsdasdasdas");
-		return (Server) server;
+		return null;
 	}
 
 	public String doSend(String command, Server server) {
