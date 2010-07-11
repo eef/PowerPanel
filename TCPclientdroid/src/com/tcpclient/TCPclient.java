@@ -10,8 +10,11 @@ import org.json.JSONTokener;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -40,13 +43,18 @@ public class TCPclient extends ListActivity {
 	private static final int CANCEL_ID = Menu.FIRST + 5;
 	private int id = 0;
 	Servers serversobject;
+	Context thisContext = this;
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		serversobject = new Servers(this);
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
+		makeToast("Finding servers...");
+		new Construct().execute();
+	}
+
+	public void listSetup() {
 		complist = serversobject.getServerInfo();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
@@ -115,20 +123,20 @@ public class TCPclient extends ListActivity {
 		} catch (JSONException e) {
 			Log.e(tag, e.getMessage());
 		}
-		serversobject.pair(id);
-		makeToast("Server has been paired");
-		refreshIPs();
-		refreshList();
+		makeToast("Pairing...");
+		new Pair().execute();
 	}
 
-	private void processShutdown(int id) {
-		serversobject.shutdown(id);
-		makeToast("Shutdown ok");
+	private void processShutdown(int idd) {
+		id = idd;
+		makeToast("Shutting down..");
+		new Shutdown().execute();
 	}
 
-	private void processCancel(int id) {
-		serversobject.cancelShutdown(id);
-		makeToast("Cancel ok");
+	private void processCancel(int idd) {
+		id = idd;
+		makeToast("Shutdown cancelled...");
+		new CancelShutdown().execute();
 	}
 
 	private void shutdown(int comp) {
@@ -140,16 +148,14 @@ public class TCPclient extends ListActivity {
 			Log.e(tag, e.getMessage());
 		}
 		if (id >= 0) {
-			new AlertDialog.Builder(this)
-					.setTitle(R.string.shutdown)
+			new AlertDialog.Builder(this).setTitle(R.string.shutdown)
 					.setPositiveButton(R.string.ok,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 									processShutdown(id);
 								}
-							})
-					.setNegativeButton(R.string.cancel,
+							}).setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -178,16 +184,14 @@ public class TCPclient extends ListActivity {
 			Log.e(tag, e.getMessage());
 		}
 		if (id >= 0) {
-			new AlertDialog.Builder(this)
-					.setTitle(R.string.cancel_shutdown)
+			new AlertDialog.Builder(this).setTitle(R.string.cancel_shutdown)
 					.setPositiveButton(R.string.ok,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 									processCancel(id);
 								}
-							})
-					.setNegativeButton(R.string.cancel,
+							}).setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -242,8 +246,8 @@ public class TCPclient extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case REFRESH_ID:
-			refreshIPs();
-			refreshList();
+			makeToast("Refreshing servers...");
+			new RefreshList().execute();
 			return true;
 		case EXIT_ID:
 			exitApp();
@@ -257,9 +261,7 @@ public class TCPclient extends ListActivity {
 	}
 
 	private void makeAlert(String msg) {
-		new AlertDialog.Builder(this)
-				.setTitle("Exception")
-				.setMessage(msg)
+		new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg)
 				.setNeutralButton("Close",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dlg, int sumthin) {
@@ -270,6 +272,102 @@ public class TCPclient extends ListActivity {
 
 	private void makeToast(String msg) {
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
+
+	class Construct extends AsyncTask<Void, String, Void> {
+		@Override
+		protected Void doInBackground(Void... unused) {
+			serversobject = new Servers(thisContext);
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			listSetup();
+		}
+	}
+
+	class RefreshList extends AsyncTask<Void, String, Void> {
+		@Override
+		protected Void doInBackground(Void... unused) {
+			refreshIPs();
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			refreshList();
+		}
+	}
+
+	class Pair extends AsyncTask<Void, String, Void> {
+		@Override
+		protected Void doInBackground(Void... unused) {
+			serversobject.pair(id);
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			Toast.makeText(thisContext, "Paired", Toast.LENGTH_SHORT).show();
+			refreshIPs();
+			refreshList();
+		}
+	}
+
+	class Shutdown extends AsyncTask<Void, Integer, Void> {
+
+		protected Void doInBackground(Void... unused) {
+			serversobject.shutdown(id);
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			refreshList();
+			Toast.makeText(thisContext, "Refreshing servers...",
+					Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	class CancelShutdown extends AsyncTask<Void, Integer, Void> {
+
+		protected Void doInBackground(Void... unused) {
+			serversobject.cancelShutdown(id);
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			refreshList();
+			Toast.makeText(thisContext, "Refreshing servers...",
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 }
