@@ -77,7 +77,10 @@ public class Server {
 	public void setMAC(String string) {
 		this.mac = string; 		
 	}
-
+	
+	public String getMAC() {
+		return this.mac; 		
+	}
 	public void setPKey(String string) {
 		this.pKey = string; 			
 	}

@@ -58,8 +58,6 @@ public class Servers {
 
 	}
 
-	
-	
 	public List<String> getServerInfo() {
 		Log.d(tag, "starting getServerInfo()");
 		Log.d(tag, "set int");
@@ -74,9 +72,8 @@ public class Servers {
 				Log.d(tag, e.getMessage());
 			}
 		}
-		Log.d(tag,
-				"soqwdjiosidjqwoisdjoqidjij"
-						+ Integer.toString(serverInfo.size()));
+		Log.d(tag, "soqwdjiosidjqwoisdjoqidjij"
+				+ Integer.toString(serverInfo.size()));
 		return serverInfo;
 	}
 
@@ -168,18 +165,18 @@ public class Servers {
 			return false;
 		}
 	}
-	public boolean shutdown(int serverID){
+
+	public boolean shutdown(int serverID) {
 		doSend("shutdown", getServer(serverID));
 		return false;
-		
-		
 	}
+
 	private Server getServer(int serverID) {
 		Log.d(tag, "test");
 		Log.d(tag, Integer.toString(serverList.size()));
 		Iterator<Server> server = serverList.iterator();
 		while (server.hasNext()) {
-			    Server current_server = server.next();
+			Server current_server = server.next();
 			if (current_server.getServerID() == 0) {
 				Log.d(tag, "test 2" + current_server.getServerID() + serverID);
 				return current_server;
@@ -189,8 +186,8 @@ public class Servers {
 		return (Server) server;
 	}
 
-	public String doSend(String command, Server server){
-		try {			
+	public String doSend(String command, Server server) {
+		try {
 			DatagramSocket clientSocket = new DatagramSocket();
 			InetAddress IPAddress = server.getServerIP();
 			byte[] sendData = new byte[1024];
