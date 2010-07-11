@@ -58,6 +58,8 @@ public class Servers {
 
 	}
 
+	
+	
 	public List<String> getServerInfo() {
 		Log.d(tag, "starting getServerInfo()");
 		Log.d(tag, "set int");
@@ -144,7 +146,7 @@ public class Servers {
 			if (server.isPaired()) {
 				paired = true;
 			} else {
-				String reply = doSend("pair", server.serverIP);
+				String reply = doSend("pair", server);
 				JSONObject object = (JSONObject) new JSONTokener(reply)
 						.nextValue();
 				if (object.getString("pairaccepted").equals("yes")) {
@@ -162,13 +164,16 @@ public class Servers {
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
-		} catch (UnknownHostException ue) {
-			return false;
 		} catch (Exception euz) {
 			return false;
 		}
 	}
-
+	public boolean shutdown(int serverID){
+		doSend("shutdown", getServer(serverID));
+		return false;
+		
+		
+	}
 	private Server getServer(int serverID) {
 		Log.d(tag, "test");
 		Log.d(tag, Integer.toString(serverList.size()));
@@ -184,10 +189,10 @@ public class Servers {
 		return (Server) server;
 	}
 
-	public String doSend(String command, InetAddress ip) throws Exception {
-		try {
+	public String doSend(String command, Server server){
+		try {			
 			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress = ip;
+			InetAddress IPAddress = server.getServerIP();
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
 			sendData = command.getBytes();

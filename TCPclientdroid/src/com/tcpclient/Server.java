@@ -97,4 +97,8 @@ public class Server {
 		
 	}
 
+	public InetAddress getServerIP() {
+		return serverIP;
+	}
+
 }
