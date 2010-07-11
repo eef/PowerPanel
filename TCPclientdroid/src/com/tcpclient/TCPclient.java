@@ -64,10 +64,6 @@ public class TCPclient extends ListActivity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Log.d(tag, "starting getServerInfo()");
-
-		Log.d(tag, "finished discover()");
-
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 		complist = serversobject.getServerInfo();
@@ -79,8 +75,8 @@ public class TCPclient extends ListActivity {
 		String item = complist.get(position);
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
-			makeToast("Name: " + object.getString("name") + "\nID: "
-					+ object.getString("id"));
+			makeToast("Pairing: " + object.getString("name"));
+			pairReq(position);
 		} catch (JSONException e) {
 			Log.e(tag, "failed to serialize select item");
 		}
@@ -135,12 +131,11 @@ public class TCPclient extends ListActivity {
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
 			id = object.getInt("id");
-			makeToast("Pairing " + object.getString("name"));
 		} catch (JSONException e) {
 			Log.e(tag, e.getMessage());
 		}
 		serversobject.pair(id);
-		makeToast("Servers has been paired");
+		makeToast("Server has been paired");
 		refreshIPs();
 		refreshList();
 	}
