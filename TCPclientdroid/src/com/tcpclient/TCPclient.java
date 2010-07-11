@@ -1,124 +1,100 @@
 package com.tcpclient;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
-import android.database.DataSetObserver;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.method.NumberKeyListener;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
-import android.widget.SimpleCursorAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.Button;
 import android.widget.Toast;
 
 public class TCPclient extends ListActivity {
-	private static final int ADD_ID = Menu.FIRST + 1;
-	private static final int DELETE_ID = Menu.FIRST + 2;
+
+	private String tag = "Main Activity ";
+	private TextView selection;
+	private List<String> complist = new ArrayList<String>();
+	private List<String> test = new ArrayList<String>();
+	public static final int ADD_ID = Menu.FIRST + 1;
+	public static final int EXIT_ID = Menu.FIRST + 2;
+
+	private static final int PAIR_ID = Menu.FIRST + 2;
 	private static final int SHUTDOWN_ID = Menu.FIRST + 3;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
-	private static final int REFRESH_ID = Menu.FIRST + 4;
-	private static final String tag = "Main Activity";
-	private SQLiteDatabase db = null;
-	private Cursor constantsCursor = null;
-	public String addresses;
+	private int id = 0;
+	Servers serversobject = null;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
-		DhcpInfo dhcp = wifi.getDhcpInfo();
-		final Comms comm = new Comms(dhcp);
+	public void onCreate(Bundle icicle) {
+		Log.d(tag, "Starting oncreate()");
+		test.add(0, "{'name':'sdas', 'id':'1', 'status':'online'}");
+		serversobject = new Servers(
+				(WifiManager) getSystemService(Context.WIFI_SERVICE));
+		Log.d(tag, "created server object");
 		try {
-			comm.discover();
-			Log.d(tag + "1", "1");
-			addresses = comm.showServerAddresses();
-			Log.d(tag + "2", "2");
+			Log.d(tag, "trying dicover");
+			serversobject.discover();
 		} catch (Exception e) {
-			Log.d("Discover: ", e.getMessage());
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		super.onCreate(savedInstanceState);
+		Log.d(tag, "starting getServerInfo()");
+
+		Log.d(tag, "finished discover()");
+
+		super.onCreate(icicle);
 		setContentView(R.layout.main);
-		db = (new DatabaseHelper(this)).getWritableDatabase();
-		constantsCursor = db.rawQuery("SELECT _ID, name, last_ip "
-				+ "FROM computers WHERE name in (" + addresses
-				+ ") ORDER BY name", null);
-		ListAdapter adapter = new SimpleCursorAdapter(this, R.layout.row,
-				constantsCursor, new String[] { "name", "last_ip" }, new int[] {
-						R.id.name, R.id.last_ip_dis });
-
-		setListAdapter(adapter);
+		complist = serversobject.getServerInfo();
+		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
+		selection = (TextView) findViewById(R.id.selection);
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		constantsCursor.close();
-		db.close();
-	}
-
-	public void refreshComps() {
-		WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
-		DhcpInfo dhcp = wifi.getDhcpInfo();
-		final Comms comm = new Comms(dhcp);
+	public void onListItemClick(ListView parent, View v, int position, long id) {
+		String item = complist.get(position);
 		try {
-			comm.discover();
-			addresses = comm.showServerAddresses();
-		} catch (Exception e) {
-			Log.d(tag + " Discover: ", e.getMessage());
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			makeToast("Name: " + object.getString("name") + "\nID: "
+					+ object.getString("id"));
+		} catch (JSONException e) {
+			Log.e(tag, "failed to serialize select item");
 		}
-		
-		db = (new DatabaseHelper(this)).getWritableDatabase();
-		constantsCursor = db.rawQuery("SELECT _ID, name, last_ip "
-				+ "FROM computers WHERE name in ("+ addresses +") ORDER BY name", null);
-		ListAdapter refresh_list = (new SimpleCursorAdapter(this, R.layout.row,
-				constantsCursor, new String[] { "name", "last_ip" }, new int[] {
-				R.id.name, R.id.last_ip_dis }));
-		setListAdapter(refresh_list);
+
+	}
+
+	private void refreshList() {
+		complist = serversobject.getServerInfo();
+		serversobject.checkForOffline();
+		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(Menu.NONE, ADD_ID, Menu.NONE, "Add")
-				.setAlphabeticShortcut('a');
-		menu.add(Menu.NONE, REFRESH_ID, Menu.NONE, "Refresh")
-				.setAlphabeticShortcut('c');
-
-		return (super.onCreateOptionsMenu(menu));
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case ADD_ID:
-			add();
-			return (true);
-
-		case REFRESH_ID:
-			refreshComps();
-			return (true);
-		}
-
-		return (super.onOptionsItemSelected(item));
 	}
 
 	@Override
@@ -128,203 +104,198 @@ public class TCPclient extends ListActivity {
 				.setAlphabeticShortcut('a');
 		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
 				.setAlphabeticShortcut('b');
-		menu.add(Menu.NONE, DELETE_ID, Menu.NONE, "Delete")
-				.setAlphabeticShortcut('c');
+		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair").setAlphabeticShortcut(
+				'c');
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 
 		switch (item.getItemId()) {
-		case DELETE_ID:
+		case PAIR_ID:
 			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-
-			delete(info.id);
+			pairReq(info.position);
 			break;
 		case SHUTDOWN_ID:
 			AdapterView.AdapterContextMenuInfo info1 = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
-
-			shutdown(info1.id);
+			shutdown(info1.position);
 			break;
 		case CANCEL_ID:
 			AdapterView.AdapterContextMenuInfo info3 = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
 
-			cancel(info3.id);
+			cancel(info3.position);
 			break;
 		}
 
 		return (super.onOptionsItemSelected(item));
 	}
 
-	private void add() {
-		LayoutInflater inflater = LayoutInflater.from(this);
-		View addView = inflater.inflate(R.layout.add_edit, null);
-		final DialogWrapper wrapper = new DialogWrapper(addView);
-
-		new AlertDialog.Builder(this).setTitle(R.string.add_title).setView(
-				addView).setPositiveButton(R.string.ok,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						processAdd(wrapper);
-					}
-				}).setNegativeButton(R.string.cancel,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						// ignore, just dismiss
-					}
-				}).show();
-	}
-
-	private void delete(final long rowId) {
-		if (rowId > 0) {
-			new AlertDialog.Builder(this).setTitle(R.string.delete_title)
-					.setPositiveButton(R.string.ok,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-									processDelete(rowId);
-								}
-							}).setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-								}
-							}).show();
-		}
-	}
-
-	private void shutdown(final long rowId) {
-		if (rowId > 0) {
-			new AlertDialog.Builder(this).setTitle(R.string.shutdown_title)
-					.setPositiveButton(R.string.ok,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-									processShutdown(rowId);
-								}
-							}).setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-								}
-							}).show();
-		}
-	}
-
-	private void cancel(final long rowId) {
-		if (rowId > 0) {
-			new AlertDialog.Builder(this).setTitle(R.string.cancel_title)
-					.setPositiveButton(R.string.ok,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-									processCancel(rowId);
-								}
-							}).setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-								}
-							}).show();
-		}
-	}
-
-	private void processAdd(DialogWrapper wrapper) {
-		ContentValues values = new ContentValues(2);
-
-		values.put("name", wrapper.getTitle());
-		values.put("last_ip", wrapper.getValue());
-
-		db.insert("computers", "name", values);
-		constantsCursor.requery();
-	}
-
-	private void processDelete(long rowId) {
-		String[] args = { String.valueOf(rowId) };
-
-		db.delete("computers", "_ID=?", args);
-		constantsCursor.requery();
-	}
-
-	private void processShutdown(long rowId) {
-		String[] args = { String.valueOf(rowId) };
-
-		constantsCursor = db.rawQuery("SELECT * "
-				+ "FROM computers WHERE _ID =?", args);
-		if (constantsCursor.moveToFirst())
-			Log.d("name", constantsCursor.getString(constantsCursor
-					.getColumnIndex("name")));
-		Log.d("last_ip", constantsCursor.getString(constantsCursor
-				.getColumnIndex("last_ip")));
+	private void pairReq(int comp) {
+		String item = complist.get(comp);
 		try {
-			WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
-			DhcpInfo dhcp = wifi.getDhcpInfo();
-			final Comms comm = new Comms(dhcp);
-			comm.doSend("shutdown", constantsCursor.getString(constantsCursor
-					.getColumnIndex("last_ip")));
-		} catch (Exception e) {
-			Log.d("Shutdown send", e.getMessage());
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+			makeToast("Pairing " + object.getString("name"));
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
 		}
-		constantsCursor.close();
+		serversobject.pair(id);
+		makeToast("Servers has been paired");
+		refreshList();
 	}
 
-	private void processCancel(long rowId) {
-		String[] args = { String.valueOf(rowId) };
+	private void processShutdown(int id) {
+		serversobject.shutdown(id);
+		makeToast("Shutdown ok");
+	}
 
-		constantsCursor = db.rawQuery("SELECT * "
-				+ "FROM computers WHERE _ID =?", args);
-		if (constantsCursor.moveToFirst())
-			Log.d("name", constantsCursor.getString(constantsCursor
-					.getColumnIndex("name")));
-		Log.d("last_ip", constantsCursor.getString(constantsCursor
-				.getColumnIndex("last_ip")));
+	private void processCancel(int id) {
+		serversobject.cancelShutdown(id);
+		makeToast("Cancel ok");
+	}
+
+	private void shutdown(int comp) {
+		String item = complist.get(comp);
 		try {
-			WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
-			DhcpInfo dhcp = wifi.getDhcpInfo();
-			final Comms comm = new Comms(dhcp);
-			comm.doSend("cancel", constantsCursor.getString(constantsCursor
-					.getColumnIndex("last_ip")));
-		} catch (Exception e) {
-			Log.d("Shutdown send", e.getMessage());
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
 		}
-		constantsCursor.close();
+		if (id >= 0) {
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.shutdown)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									processShutdown(id);
+								}
+							})
+					.setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
 	}
 
-	class DialogWrapper {
-		EditText titleField = null;
-		EditText valueField = null;
-		View base = null;
+	private void refreshIPs() {
+		complist.clear();
+		try {
+			Log.d(tag, "trying dicover");
+			serversobject.discover();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
-		DialogWrapper(View base) {
-			this.base = base;
-			valueField = (EditText) base.findViewById(R.id.last_ip);
+	private void cancel(int comp) {
+		String item = complist.get(comp);
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
+		}
+		if (id >= 0) {
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.cancel_shutdown)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									processCancel(id);
+								}
+							})
+					.setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
+	}
+
+	class IconicAdapter extends ArrayAdapter {
+		IconicAdapter() {
+			super(TCPclient.this, R.layout.row, complist);
 		}
 
-		String getTitle() {
-			return (getTitleField().getText().toString());
-		}
+		public View getView(int position, View convertView, ViewGroup parent) {
+			LayoutInflater inflater = getLayoutInflater();
+			View row = inflater.inflate(R.layout.row, null);
+			TextView label = (TextView) row.findViewById(R.id.label);
+			String item = complist.get(position);
 
-		String getValue() {
-			return (getValueField().getText().toString());
-		}
-
-		private EditText getTitleField() {
-			if (titleField == null) {
-				titleField = (EditText) base.findViewById(R.id.name);
+			try {
+				JSONObject object = (JSONObject) new JSONTokener(item)
+						.nextValue();
+				label.setText(object.getString("name"));
+				ImageView icon = (ImageView) row.findViewById(R.id.icon);
+				if (object.getString("status").equals("ponline")) {
+					icon.setImageResource(R.drawable.ponline);
+				} else if (object.getString("status").equals("offline")) {
+					icon.setImageResource(R.drawable.offline);
+				} else if (object.getString("status").equals("online")) {
+					icon.setImageResource(R.drawable.online);
+				}
+			} catch (JSONException e) {
+				Log.e(tag, e.getMessage());
 			}
 
-			return (titleField);
-		}
-
-		private EditText getValueField() {
-			if (valueField == null) {
-				valueField = (EditText) base.findViewById(R.id.last_ip);
-			}
-
-			return (valueField);
+			return (row);
 		}
 	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		this.finish();
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, ADD_ID, 0, "Refresh");
+		menu.add(0, EXIT_ID, 0, "Exit");
+		return true;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case ADD_ID:
+			refreshIPs();
+			refreshList();
+			return true;
+		case EXIT_ID:
+			exitApp();
+			return true;
+		}
+		return false;
+	}
+
+	private void exitApp() {
+		onStop();
+	}
+
+	private void makeAlert(String msg) {
+		new AlertDialog.Builder(this)
+				.setTitle("Exception")
+				.setMessage(msg)
+				.setNeutralButton("Close",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dlg, int sumthin) {
+								// Do nothing, it will close itself...hopefully
+							}
+						}).show();
+	}
+
+	private void makeToast(String msg) {
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
+
 }

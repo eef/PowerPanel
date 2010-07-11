@@ -11,26 +11,24 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-
-import android.database.sqlite.SQLiteDatabase;
+import android.net.wifi.WifiManager;
 import android.net.DhcpInfo;
 import android.util.Log;
+import org.json.*;
 
 public class Comms {
-
+	// variables:
 	private List<InetAddress> iplist = new ArrayList<InetAddress>();
 	private InetAddress broadcastIP;
-	private String names = "";
-	private String tag = "Comms";
+	private boolean authenticated = false;
 
-	public Comms(DhcpInfo dhcp) {
+	public Comms(WifiManager wifimanobj) {
 
 		try {
-
+			DhcpInfo dhcp = wifimanobj.getDhcpInfo();
 			if (dhcp == null) {
-				Log.d(tag, "Could not get dhcp info");
+				Log.d("shit", "Could not get dhcp info");
 			}
-
 			int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
 			byte[] quads = new byte[4];
 			for (int k = 0; k < 4; k++)
@@ -64,11 +62,13 @@ public class Comms {
 		}
 		return null;
 	}
-
+	
 	public void discover() throws Exception {
 
-		if (broadcastIP == null) {
-			Log.e(tag + " discovery", "shit the bed.. no broadcast");
+		
+		
+		if (broadcastIP != null) {
+			Log.e("discovery", "shit the bed..");
 		}
 
 		try {
@@ -82,7 +82,7 @@ public class Comms {
 			DatagramPacket receivePacket = new DatagramPacket(receiveData,
 					receiveData.length);
 
-			clientSocket.setSoTimeout(1000); // sets how long reicive() blocks
+			clientSocket.setSoTimeout(5000); // sets how long reicive() blocks
 												// for once there are no new
 												// packates
 			long t = System.currentTimeMillis();
@@ -90,36 +90,69 @@ public class Comms {
 			while (System.currentTimeMillis() < end) {
 				clientSocket.receive(receivePacket);
 				iplist.add(receivePacket.getAddress());
-				Log.d(tag + " discovery discovered", (receivePacket.getAddress().toString()));
-				Log.d(tag + " discovery ip count", String.valueOf(iplist.size()));
+				Log.e("discovery", (receivePacket.getAddress().toString()));
 				Thread.sleep(500);
+				// modifiedSentence = modifiedSentence +
+				// receivePacket.getAddress().toString();
+				Log.e("discovery1", String.valueOf(iplist.size()));
 			}
 			clientSocket.close();
 
 		} catch (UnknownHostException e) {
-			Log.e(tag + " discovery", "UnknownHostException:" + e.toString());
+			Log.e("recieved:", "UnknownHostException:" + e.toString());
 
 		} catch (IOException e) {
-			Log.e(tag + " discovery", "IOException:" + e.toString());
+			Log.e("recieved:", "IOException:" + e.toString());
 		}
 	}
 
+	public boolean pair(InetAddress server) {
+		try {
+
+			String confirm = null;
+			String mac, pkey;
+			String reply = doSend("pair");
+			JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
+			confirm = object.getString("confirm");
+			mac = object.getString("mac");
+			pkey = object.getString("pkey");
+			if (confirm.equals("yes")) {
+				authenticated = true;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return authenticated;
+	}
+
+	public boolean pair() {
+		try {
+
+			String confirm = null;
+			String mac, pkey;
+			String reply = doSend("pair");
+			JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
+			confirm = object.getString("confirm");
+			mac = object.getString("mac");
+			pkey = object.getString("pkey");
+			if (confirm.equals("yes")) {
+				authenticated = true;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return authenticated;
+	}
+	
+	
 	public String showServerAddresses() { // Returns a string with all
 											// discovered servers
-		Log.d("showServerAddresses 1", "1");
 		Iterator<InetAddress> iterator = iplist.iterator();
-		Log.d("showServerAddresses 2", "2");
+		String addresses = "";
 		while (iterator.hasNext()) {
-			try {
-				String name = doSend("info", iterator.next().toString().replace("/", ""));
-				Log.d(tag + " showServerAddresses Iterator", name);
-				names += "'" + name + "',";
-			} catch (Exception e) {
-				Log.e(tag + " discovery", e.getMessage());
-			}
+			addresses = " " + iterator.next().toString();
 		}
-		Log.d("names", names.substring(0, names.length() - 1));
-		return names.substring(0, names.length() - 1);
+		return addresses;
 	}
 
 	public List<InetAddress> getServerAddresses() { // returns list of
@@ -132,10 +165,12 @@ public class Comms {
 		return broadcastIP;
 	}
 
-	public String doSend(String command, String ip) throws Exception {
+	public String doSend(String command) {
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress = InetAddress.getByName(ip);
+			Log.d("broadcast", "1");
+			InetAddress IPAddress = InetAddress.getByName(broadcastIP.toString());
+			Log.d("broadcast", "2");
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
 			sendData = command.getBytes();
@@ -154,4 +189,5 @@ public class Comms {
 			return "IO Exception: " + e.getMessage();
 		}
 	}
+	
 }

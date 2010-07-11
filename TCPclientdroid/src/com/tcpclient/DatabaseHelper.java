@@ -14,6 +14,7 @@ private static final String DATABASE_NAME="shutdown";
 public static final String COMPUTERNAME="name";
 public static final String LAST_IP="last_ip";
 private static final String tag = null;
+public boolean authenticated = false;
 
 public DatabaseHelper(Context context) {
 	super(context, DATABASE_NAME, null, 1);
@@ -37,4 +38,6 @@ public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	db.execSQL("DROP TABLE IF EXISTS computers");
 	onCreate(db);
 }
+
+
 }
