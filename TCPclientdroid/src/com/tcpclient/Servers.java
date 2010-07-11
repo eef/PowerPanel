@@ -168,6 +168,11 @@ public class Servers {
 		return false;
 	}
 
+	public boolean cancelShutdown(int serverID) {
+		doSend("cancel", getServer(serverID));
+		return false;
+	}
+	
 	private Server getServer(int serverID) {
 		Log.d(tag, "test");
 		Log.d(tag, Integer.toString(serverList.size()));
