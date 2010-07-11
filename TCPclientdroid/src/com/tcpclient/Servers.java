@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
@@ -33,8 +34,8 @@ public class Servers {
 	private List<Server> displayList = new ArrayList<Server>();
 	private String status = new String();
 
-	public Servers(WifiManager wifi) {
-
+	public Servers(Context context) {
+		WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		try {
 			DhcpInfo dhcp = wifi.getDhcpInfo();
 			if (dhcp == null) {
@@ -46,6 +47,13 @@ public class Servers {
 				quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
 			broadcastIP = InetAddress.getByAddress(quads);
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			Log.d(tag, "trying dicover");
+			discover();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

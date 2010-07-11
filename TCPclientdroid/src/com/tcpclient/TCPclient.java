@@ -1,24 +1,16 @@
 package com.tcpclient;
 
-import java.net.InetAddress;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -29,41 +21,30 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.EditText;
-import android.widget.Button;
 import android.widget.Toast;
 
 public class TCPclient extends ListActivity {
 
 	private String tag = "Main Activity ";
-	private TextView selection;
 	private List<String> complist = new ArrayList<String>();
-	private List<String> test = new ArrayList<String>();
-	public static final int ADD_ID = Menu.FIRST + 1;
+	public static final int REFRESH_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
-	private static final int PAIR_ID = Menu.FIRST + 2;
-	private static final int SHUTDOWN_ID = Menu.FIRST + 3;
+	private static final int PAIR_ID = Menu.FIRST + 3;
+	private static final int SHUTDOWN_ID = Menu.FIRST + 4;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
 	private int id = 0;
-	Servers serversobject = null;
+	Servers serversobject;
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		serversobject = new Servers(
-				(WifiManager) getSystemService(Context.WIFI_SERVICE));
+		serversobject = new Servers(this);
 		Log.d(tag, "created server object");
-		try {
-			Log.d(tag, "trying dicover");
-			serversobject.discover();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
 		complist = serversobject.getServerInfo();
@@ -253,14 +234,14 @@ public class TCPclient extends ListActivity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, ADD_ID, 0, "Refresh");
+		menu.add(0, REFRESH_ID, 0, "Refresh");
 		menu.add(0, EXIT_ID, 0, "Exit");
 		return true;
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case ADD_ID:
+		case REFRESH_ID:
 			refreshIPs();
 			refreshList();
 			return true;
