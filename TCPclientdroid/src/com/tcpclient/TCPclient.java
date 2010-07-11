@@ -50,13 +50,15 @@ public class TCPclient extends ListActivity {
 	private static final int DELETE_ID = Menu.FIRST + 2;
 	private static final int SHUTDOWN_ID = Menu.FIRST + 3;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
+	
+	Servers serversobject = null;
 
 	
 	@Override
 	public void onCreate(Bundle icicle) {
 		Log.d(tag, "Starting oncreate()");
 		test.add(0, "{'name':'sdas', 'id':'1', 'status':'online'}");
-		Servers serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
+		serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
 		Log.d(tag, "created server object");
 		try {
 			Log.d(tag, "trying dicover");
@@ -143,10 +145,9 @@ public class TCPclient extends ListActivity {
 				Log.e(tag, e.getMessage());
 			}
 		}
-		Servers serversobject = new Servers((WifiManager) getSystemService(Context.WIFI_SERVICE));
-		if(serversobject.pair(idList)) {
-			makeToast("Servers has been paired");
-		}
+		makeToast("idList size: " + Integer.toString(idList.size()));
+		serversobject.pair(idList);
+		makeToast("Servers has been paired");
 	}
 
 	class IconicAdapter extends ArrayAdapter {

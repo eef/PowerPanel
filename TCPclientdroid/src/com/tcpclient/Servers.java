@@ -20,13 +20,15 @@ import android.util.Log;
 
 public class Servers {
 	private String tag = "Servers.java class";
-	
+
 	private int PORT = 2501;
 	int x = 0;
 	private InetAddress broadcastIP;
 	private List<Server> serverList = new ArrayList<Server>();
 	private List<String> serverInfo = new ArrayList<String>();
 	private int nextID;
+	private Iterator<Integer> serverID = null;
+
 	public Servers(WifiManager wifi) {
 
 		try {
@@ -47,15 +49,15 @@ public class Servers {
 	public void addToServerList(InetAddress newServerIP) {
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
-		
+
 		serverList.add(bogla);
 	}
 
-	public void setServername(int serverID, String servername){
-		getServer( serverID).setName(servername);
-		
+	public void setServername(int serverID, String servername) {
+		getServer(serverID).setName(servername);
+
 	}
-	
+
 	public List<String> getServerInfo() {
 		Log.d(tag, "starting getServerInfo()");
 		Log.d(tag, "set int");
@@ -68,10 +70,12 @@ public class Servers {
 				x++;
 			} catch (JSONException e) {
 				Log.d(tag, e.getMessage());
-			}					
+			}
 		}
-		Log.d(tag, "soqwdjiosidjqwoisdjoqidjij" + Integer.toString(serverInfo.size()));
-		return serverInfo;		
+		Log.d(tag,
+				"soqwdjiosidjqwoisdjoqidjij"
+						+ Integer.toString(serverInfo.size()));
+		return serverInfo;
 	}
 
 	public void discover() throws Exception {
@@ -94,7 +98,7 @@ public class Servers {
 			DatagramPacket receivePacket = new DatagramPacket(receiveData,
 					receiveData.length);
 
-			clientSocket.setSoTimeout(5000); // sets how long reicive() blocks
+			clientSocket.setSoTimeout(1000); // sets how long reicive() blocks
 			// for once there are no new
 			// packates
 			long t = System.currentTimeMillis();
@@ -123,30 +127,38 @@ public class Servers {
 	}
 
 	public boolean pair(List<Integer> serverIDs) {
-		//TODO: make success return proper info
+		// TODO: make success return proper info
+		serverID = serverIDs.iterator();
+		int id = serverIDs.get(0);
+		Server server = getServer(id);
+		Log.d(tag, "id: " + Integer.toString(serverIDs.size()));
+		Log.d(tag, "2");
 		boolean paired = false;
 		try {
-			Iterator<Integer> serverID = serverIDs.iterator();
-			while (serverID.hasNext()) {
-				Server server = getServer(serverID.next());
-				if (server.isPaired()){
+			Log.d(tag, "teeee");
+			if (serverID.hasNext()) {
+				Log.d(tag, "testdddddddd");
+			}
+			Log.d(tag, "iterate");
+			Log.d(tag, "iterate" + server.serverIP);
+			if (server.isPaired()) {
+				paired = true;
+			} else {
+				String reply = doSend("pair", server.serverIP);
+				JSONObject object = (JSONObject) new JSONTokener(reply)
+						.nextValue();
+				if (object.getString("pairaccepted").equals("yes")) {
+					// TODO: create setters/getters?
+					server.setMAC(object.getString("mac"));
+					server.setPKey(object.getString("pkey"));
+					server.setStatus("paired");
+					// call 'sync' method
 					paired = true;
-				}else{
-					String reply = doSend("pair", server.serverIP);
-					JSONObject object = (JSONObject) new JSONTokener(reply).nextValue();
-					if (object.getString("pairaccepted").equals("yes")) {
-						// TODO: create setters/getters?
-						server.setMAC(object.getString("mac"));
-						server.setPKey(object.getString("pkey"));
-						server.setStatus("paired");
-						// call 'sync' method
-						paired = true;
-					}
 				}
 			}
 
 			return paired;
-			
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
@@ -158,12 +170,17 @@ public class Servers {
 	}
 
 	private Server getServer(int serverID) {
+		Log.d(tag, "test");
+		Log.d(tag, Integer.toString(serverList.size()));
 		Iterator<Server> server = serverList.iterator();
 		while (server.hasNext()) {
-			if (((Server) server.next()).getServerID() == serverID) {
-				return (Server) server;
+			    Server current_server = server.next();
+			if (current_server.getServerID() == 0) {
+				Log.d(tag, "test 2" + current_server.getServerID() + serverID);
+				return current_server;
 			}
 		}
+		Log.d("test", "wsdasdasdas");
 		return (Server) server;
 	}
 
