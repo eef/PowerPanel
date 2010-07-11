@@ -67,7 +67,7 @@ public class TCPclient extends ListActivity {
 			e.printStackTrace();
 		}
 		Log.d(tag, "starting getServerInfo()");
-		
+
 		Log.d(tag, "finished discover()");
 
 		super.onCreate(icicle);
@@ -89,13 +89,13 @@ public class TCPclient extends ListActivity {
 		}
 
 	}
-	
+
 	private void refreshList() {
 		complist = serversobject.getServerInfo();
+		serversobject.checkForOffline();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
 	}
-	
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -104,8 +104,8 @@ public class TCPclient extends ListActivity {
 				.setAlphabeticShortcut('a');
 		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
 				.setAlphabeticShortcut('b');
-		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair")
-				.setAlphabeticShortcut('c');
+		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair").setAlphabeticShortcut(
+				'c');
 	}
 
 	@Override
@@ -144,7 +144,6 @@ public class TCPclient extends ListActivity {
 		}
 		serversobject.pair(id);
 		makeToast("Servers has been paired");
-		complist.clear();
 		refreshList();
 	}
 
@@ -152,7 +151,7 @@ public class TCPclient extends ListActivity {
 		serversobject.shutdown(id);
 		makeToast("Shutdown ok");
 	}
-	
+
 	private void processCancel(int id) {
 		serversobject.cancelShutdown(id);
 		makeToast("Cancel ok");
@@ -184,7 +183,18 @@ public class TCPclient extends ListActivity {
 							}).show();
 		}
 	}
-	
+
+	private void refreshIPs() {
+		complist.clear();
+		try {
+			Log.d(tag, "trying dicover");
+			serversobject.discover();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	private void cancel(int comp) {
 		String item = complist.get(comp);
 		try {
@@ -250,7 +260,7 @@ public class TCPclient extends ListActivity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, ADD_ID, 0, "Add");
+		menu.add(0, ADD_ID, 0, "Refresh");
 		menu.add(0, EXIT_ID, 0, "Exit");
 		return true;
 	}
@@ -258,7 +268,8 @@ public class TCPclient extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case ADD_ID:
-
+			refreshIPs();
+			refreshList();
 			return true;
 		case EXIT_ID:
 			exitApp();

@@ -22,6 +22,7 @@ public class Servers {
 	private String tag = "Servers.java class";
 
 	private int PORT = 2501;
+	boolean have = false;
 	int x = 0;
 	private InetAddress broadcastIP;
 	private List<Server> serverList = new ArrayList<Server>();
@@ -29,6 +30,7 @@ public class Servers {
 	private int nextID;
 	private Iterator<Integer> serverID = null;
 	private Server server = null;
+	private List<Server> oldServerList = new ArrayList<Server>();
 
 	public Servers(WifiManager wifi) {
 
@@ -48,11 +50,61 @@ public class Servers {
 	}
 
 	public void addToServerList(InetAddress newServerIP) {
+		boolean server = getServer(newServerIP.toString());
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
-		if(!serverList.contains(bogla)) {
+		if(!server) {
 			serverList.add(bogla);
+			oldServerList.add(bogla);
 		}
+	}
+	
+	public void checkForOffline() {
+		Log.d(tag, "Starting checkoffline");
+		List<String> serverInfo = this.serverInfo;
+		Log.d(tag, "00000000000 " + Integer.toString(this.serverList.size()));
+		Iterator<String> serverInfoIt = serverInfo.iterator();
+		while(serverInfoIt.hasNext()) {
+			Log.d(tag, "Starting checkoffline iterator");
+			String current_si = serverInfoIt.next().toString();
+			String serverIP = null;
+			int serverID = 0;
+			try {
+				JSONObject object = (JSONObject) new JSONTokener(current_si)
+				.nextValue();
+				serverIP = object.getString("hostname");
+				serverID = object.getInt("id");
+				Log.d(tag, "checkoffline " + serverIP);
+				boolean offline = getServer(serverIP);
+				if (!offline) {
+					Server server = getServer(serverID);
+					server.setStatus("offline");
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.d(tag, "++++++++++++++++++++++++++++++");
+			Log.d(tag, current_si);
+		}
+	}
+	
+	private boolean getServer(String serverIP) {
+		Log.d(tag, "onrefresh " + Integer.toString(oldServerList.size()));
+		have = false;
+		Iterator<Server> server = oldServerList.iterator();
+		while (server.hasNext()) {
+			Server current_server = server.next();
+			Log.d(tag, "serverIP: " + serverIP.replace("/", "") + ":" + current_server.getServerIP().getHostAddress());
+			if (current_server.getServerIP().getHostAddress().equals(serverIP.replace("/", ""))) {
+				Log.d(tag, "online " + current_server.getServerIP().getHostAddress());
+				have = true;
+			}
+		}
+		if(have == false) {
+			Log.d(tag, "offline");
+		}
+		return have;
 	}
 
 	public void setServername(int serverID, String servername) {
@@ -63,7 +115,7 @@ public class Servers {
 	public List<String> getServerInfo() {
 		Log.d(tag, "starting getServerInfo()");
 		Log.d(tag, "set int");
-		Iterator<Server> server = serverList.iterator();
+		Iterator<Server> server = oldServerList.iterator();
 		Log.d(tag, "created iterator");
 		while (server.hasNext()) {
 			Log.d(tag, "while getServerInfo()");
@@ -80,6 +132,7 @@ public class Servers {
 	}
 
 	public void discover() throws Exception {
+		serverList.clear();
 		Log.d(tag, "starting discover()");
 		InetAddress broadcastIP = InetAddress.getByName("192.168.0.255");
 		Log.d(tag, "created inetaddy with broadcast");
@@ -176,8 +229,8 @@ public class Servers {
 	
 	private Server getServer(int serverID) {
 		Log.d(tag, "test");
-		Log.d(tag, Integer.toString(serverList.size()));
-		Iterator<Server> server = serverList.iterator();
+		Log.d(tag, Integer.toString(oldServerList.size()));
+		Iterator<Server> server = oldServerList.iterator();
 		while (server.hasNext()) {
 			Server current_server = server.next();
 			if (current_server.getServerID() == serverID) {

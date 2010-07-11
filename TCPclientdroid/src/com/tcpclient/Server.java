@@ -84,6 +84,10 @@ public class Server {
 	public void setPKey(String string) {
 		this.pKey = string; 			
 	}
+	
+	public String getPKey() {
+		return this.pKey; 			
+	}
 
 	public void setHostName() {		
 		if (serverIP != null)
