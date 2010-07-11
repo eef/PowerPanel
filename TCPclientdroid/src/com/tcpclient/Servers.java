@@ -30,7 +30,7 @@ public class Servers {
 	private int nextID;
 	private Iterator<Integer> serverID = null;
 	private Server server = null;
-	private List<Server> oldServerList = new ArrayList<Server>();
+	private List<Server> displayList = new ArrayList<Server>();
 	private String status = new String();
 
 	public Servers(WifiManager wifi) {
@@ -56,14 +56,14 @@ public class Servers {
 		nextID += 1;
 		serverList.add(bogla);
 		if(!server) {
-			oldServerList.add(bogla);
+			displayList.add(bogla);
 		}
 	}
 	
 	
 	private boolean getServer(String serverIP) {
 		have = false;
-		Iterator<Server> server = oldServerList.iterator();
+		Iterator<Server> server = displayList.iterator();
 		while (server.hasNext()) {
 			Server current_server = server.next();
 			if (current_server.getServerIP().getHostAddress().equals(serverIP.replace("/", ""))) {
@@ -79,7 +79,7 @@ public class Servers {
 	}
 
 	public List<String> getServerInfo() {
-		Iterator<Server> server = oldServerList.iterator();
+		Iterator<Server> server = displayList.iterator();
 		while (server.hasNext()) {
 			Server current_server = server.next();
 			try {
@@ -202,7 +202,7 @@ public class Servers {
 	}
 	
 	private Server getServer(int serverID) {
-		Iterator<Server> servers = oldServerList.iterator();
+		Iterator<Server> servers = displayList.iterator();
 		if(servers.hasNext()) {
 			Log.d(tag, "getServer has next");
 		}
