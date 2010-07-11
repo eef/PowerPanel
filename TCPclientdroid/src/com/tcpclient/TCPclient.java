@@ -46,7 +46,7 @@ public class TCPclient extends ListActivity {
 	public static final int ADD_ID = Menu.FIRST + 1;
 	public static final int EXIT_ID = Menu.FIRST + 2;
 
-	private static final int DELETE_ID = Menu.FIRST + 2;
+	private static final int PAIR_ID = Menu.FIRST + 2;
 	private static final int SHUTDOWN_ID = Menu.FIRST + 3;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
 	private int id = 0;
@@ -96,7 +96,7 @@ public class TCPclient extends ListActivity {
 				.setAlphabeticShortcut('a');
 		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
 				.setAlphabeticShortcut('b');
-		menu.add(Menu.NONE, DELETE_ID, Menu.NONE, "Delete")
+		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "PAIR")
 				.setAlphabeticShortcut('c');
 	}
 
@@ -104,7 +104,7 @@ public class TCPclient extends ListActivity {
 	public boolean onContextItemSelected(MenuItem item) {
 
 		switch (item.getItemId()) {
-		case DELETE_ID:
+		case PAIR_ID:
 			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 					.getMenuInfo();
 			pairReq(info.position);
@@ -139,9 +139,13 @@ public class TCPclient extends ListActivity {
 	}
 
 	private void processShutdown(int id) {
-
-		makeToast("Shutdown " + Integer.toString(id));
-
+		serversobject.shutdown(id);
+		makeToast("Shutdown ok");
+	}
+	
+	private void processCancel(int id) {
+		serversobject.cancelShutdown(id);
+		makeToast("Cancel ok");
 	}
 
 	private void shutdown(int comp) {
@@ -161,6 +165,34 @@ public class TCPclient extends ListActivity {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 									processShutdown(id);
+								}
+							})
+					.setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
+	}
+	
+	private void cancel(int comp) {
+		String item = complist.get(comp);
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+			makeToast("Shutdown " + object.getString("name"));
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
+		}
+		if (id >= 0) {
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.cancel_shutdown)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									processCancel(id);
 								}
 							})
 					.setNegativeButton(R.string.cancel,
