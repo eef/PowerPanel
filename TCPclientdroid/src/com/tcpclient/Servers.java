@@ -28,6 +28,7 @@ public class Servers {
 	private List<String> serverInfo = new ArrayList<String>();
 	private int nextID;
 	private Iterator<Integer> serverID = null;
+	private Server server = null;
 
 	public Servers(WifiManager wifi) {
 
@@ -125,22 +126,18 @@ public class Servers {
 		}
 	}
 
-	public boolean pair(List<Integer> serverIDs) {
+	public boolean pair(int serverID) {
 		// TODO: make success return proper info
-		serverID = serverIDs.iterator();
-		int id = serverIDs.get(0);
-		Server server = getServer(id);
-		Log.d(tag, "id: " + Integer.toString(serverIDs.size()));
+		server = getServer(serverID);
+		Log.d(tag, "id: " + Integer.toString(serverID));
 		Log.d(tag, "2");
 		boolean paired = false;
 		try {
 			Log.d(tag, "teeee");
-			if (serverID.hasNext()) {
-				Log.d(tag, "testdddddddd");
-			}
 			Log.d(tag, "iterate");
 			Log.d(tag, "iterate" + server.serverIP);
 			if (server.isPaired()) {
+				Log.d(tag, "paired");
 				paired = true;
 			} else {
 				String reply = doSend("pair", server);
@@ -155,7 +152,7 @@ public class Servers {
 					paired = true;
 				}
 			}
-
+			Log.d(tag, server.getInfo().get("pKey").toString());
 			return paired;
 
 		} catch (JSONException e) {
@@ -177,7 +174,8 @@ public class Servers {
 		Iterator<Server> server = serverList.iterator();
 		while (server.hasNext()) {
 			Server current_server = server.next();
-			if (current_server.getServerID() == 0) {
+			if (current_server.getServerID() == serverID) {
+
 				Log.d(tag, "test 2" + current_server.getServerID() + serverID);
 				return current_server;
 			}
