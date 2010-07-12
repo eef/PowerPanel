@@ -44,6 +44,7 @@ public class TCPclient extends ListActivity {
 	private int id = 0;
 	Servers serversobject;
 	Context thisContext = this;
+	private String status;
 
 	@Override
 	public void onCreate(Bundle icicle) {
@@ -307,6 +308,7 @@ public class TCPclient extends ListActivity {
 		@Override
 		protected void onPostExecute(Void unused) {
 			refreshList();
+			
 		}
 	}
 
@@ -333,7 +335,7 @@ public class TCPclient extends ListActivity {
 	class Shutdown extends AsyncTask<Void, Integer, Void> {
 
 		protected Void doInBackground(Void... unused) {
-			serversobject.shutdown(id);
+			status = serversobject.shutdown(id);
 			return (null);
 		}
 

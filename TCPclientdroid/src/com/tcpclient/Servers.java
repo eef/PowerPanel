@@ -33,6 +33,7 @@ public class Servers {
 	private Server server = null;
 	private List<Server> displayList = new ArrayList<Server>();
 	private String status = new String();
+	public int ipCount;
 
 	public Servers(Context context) {
 		WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -57,6 +58,8 @@ public class Servers {
 			e.printStackTrace();
 		}
 	}
+	
+	
 
 	public void addToServerList(InetAddress newServerIP) {
 		boolean server = getServer(newServerIP.toString());
@@ -88,6 +91,8 @@ public class Servers {
 
 	public List<String> getServerInfo() {
 		Iterator<Server> server = displayList.iterator();
+		Log.d(tag, Integer.toString(serverList.size()));
+		ipCount = serverList.size();
 		while (server.hasNext()) {
 			Server current_server = server.next();
 			try {
@@ -199,14 +204,12 @@ public class Servers {
 		}
 	}
 
-	public boolean shutdown(int serverID) {
-		doSend("shutdown", getServer(serverID));
-		return false;
+	public String shutdown(int serverID) {
+		return doSend("shutdown", getServer(serverID));
 	}
 
-	public boolean cancelShutdown(int serverID) {
-		doSend("cancel", getServer(serverID));
-		return false;
+	public String cancelShutdown(int serverID) {
+		return doSend("cancel", getServer(serverID));
 	}
 	
 	private Server getServer(int serverID) {
