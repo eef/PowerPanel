@@ -13,6 +13,7 @@ ID_STOP = wx.NewId()
 
 
 def get_mac_address(): 
+  #this copied directly and needs to be changed to deal with multiple interfaces other OS's and generally improived
   if sys.platform == 'win32': 
     for line in os.popen("ipconfig /all"): 
       if line.lstrip().startswith('Physical Address'): 
