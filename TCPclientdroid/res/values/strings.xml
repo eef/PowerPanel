@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Shutdown</string>
+	<string name="app_name">Power Panel</string>
 	<string name="hello">Shutdown</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_shutdown">Cancel shutdown: Are you sure?</string>
