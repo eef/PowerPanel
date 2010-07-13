@@ -151,19 +151,19 @@ class MainFrame(wx.Frame):
     wx.Button(self, ID_STOP, 'Stop', pos=(0, 50))
     self.status = wx.StaticText(self, -1, '', pos=(0, 100))
 
-    self.Bind(wx.EVT_BUTTON, self.OnStart, id=ID_START)
-    self.Bind(wx.EVT_BUTTON, self.OnStop, id=ID_STOP)
+    self.Bind(wx.EVT_BUTTON, self.server_start, id=ID_START)
+    self.Bind(wx.EVT_BUTTON, self.server_top, id=ID_STOP)
 
     EVT_RESULT(self, self.OnResult)
 
     self.worker = None
 
-  def OnStart(self, event):
+  def server_start(self, event):
     if not self.worker:
       self.status.SetLabel('Starting server')
       self.worker = WorkerThread(self)
 
-  def OnStop(self, event):
+  def server_stop(self, event):
     if self.worker:
       self.status.SetLabel('Shutting server down...')
       self.worker.abort()
