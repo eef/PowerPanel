@@ -1,8 +1,14 @@
+import time
+
 import SocketServer
 import os
 import socket
 import wx
 import xml.dom.minidom
+from threading import *
+
+ID_START = wx.NewId()
+ID_STOP = wx.NewId()
 
 class Server():
   def __init__(self):
@@ -51,6 +57,7 @@ class  Handler(object):
     return res
         
   def handle_pair(self):
+    # Mocking some data until I get it in a config
     res = "{ 'pairaccepted' : 'yes', 'pkey':'123456788','mac':'00-1F-D0-5C-3A-BB'}"
     return res
         
@@ -99,7 +106,83 @@ class Config():
     else:
       print dom.getElementsByTagName("config").childNodes
 
-if __name__ == "__main__":
+ID_START = wx.NewId()
+ID_STOP = wx.NewId()
 
-  server = Server()
+EVT_RESULT_ID = wx.NewId()
+
+def EVT_RESULT(win, func):
+  win.Connect(-1, -1, EVT_RESULT_ID, func)
+
+class ResultEvent(wx.PyEvent):
+  def __init__(self, data):
+    wx.PyEvent.__init__(self)
+    self.SetEventType(EVT_RESULT_ID)
+    self.data = data
+
+class WorkerThread(Thread):
+  def __init__(self, notify_window):
+    Thread.__init__(self)
+    self._notify_window = notify_window
+    self._want_abort = 0
+    self.start()
+
+  def run(self):
+    HOST = socket.gethostbyname(socket.gethostname())
+    PORT = 2501
+    self.server = SocketServer.UDPServer((HOST, PORT), Comms)
+    self.server.serve_forever()
+    while(self._want_abort == 0):
+      time.sleep(1)
+      if self._want_abort:
+        wx.PostEvent(self._notify_window, ResultEvent(None))
+        return
+    wx.PostEvent(self._notify_window, ResultEvent(10))
+
+  def abort(self):
+    self.server.shutdown()
+    self._want_abort = 1
+
+class MainFrame(wx.Frame):
+  def __init__(self, parent, id):
+    wx.Frame.__init__(self, parent, id, 'Shutdown')
+
+    wx.Button(self, ID_START, 'Start', pos=(0, 0))
+    wx.Button(self, ID_STOP, 'Stop', pos=(0, 50))
+    self.status = wx.StaticText(self, -1, '', pos=(0, 100))
+
+    self.Bind(wx.EVT_BUTTON, self.OnStart, id=ID_START)
+    self.Bind(wx.EVT_BUTTON, self.OnStop, id=ID_STOP)
+
+    EVT_RESULT(self, self.OnResult)
+
+    self.worker = None
+
+  def OnStart(self, event):
+    if not self.worker:
+      self.status.SetLabel('Starting server')
+      self.worker = WorkerThread(self)
+
+  def OnStop(self, event):
+    if self.worker:
+      self.status.SetLabel('Shutting server down...')
+      self.worker.abort()
+
+  def OnResult(self, event):
+    if event.data is None:
+      self.status.SetLabel('Server shutdown complete')
+    else:
+      self.status.SetLabel('Shizzle: %s' % event.data)
+    self.worker = None
+
+class MainApp(wx.App):
+  def OnInit(self):
+    self.frame = MainFrame(None, -1)
+    self.frame.Show(True)
+    self.SetTopWindow(self.frame)
+    return True
+
+if __name__ == '__main__':
+  app = MainApp(0)
+  app.MainLoop()
   
