@@ -36,7 +36,8 @@ public class Servers {
 	public int ipCount;
 
 	public Servers(Context context) {
-		WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		WifiManager wifi = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
 		try {
 			DhcpInfo dhcp = wifi.getDhcpInfo();
 			if (dhcp == null) {
@@ -58,26 +59,69 @@ public class Servers {
 			e.printStackTrace();
 		}
 	}
-	
-	
 
 	public void addToServerList(InetAddress newServerIP) {
 		boolean server = getServer(newServerIP.toString());
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
 		serverList.add(bogla);
-		if(!server) {
+		if (!server) {
 			displayList.add(bogla);
 		}
 	}
-	
+
+	public boolean wakeUp(int serverID){
+		final int WOLPORT = 9;    
+		Server wolserver = getServer(serverID);
+		        String ipStr = wolserver.getServerIP().toString();
+		        String macStr = wolserver.getMAC();
+		        
+		        try {
+		            byte[] macBytes = getMacBytes(macStr);
+		            byte[] bytes = new byte[6 + 16 * macBytes.length];
+		            for (int i = 0; i < 6; i++) {
+		                bytes[i] = (byte) 0xff;
+		            }
+		            for (int i = 6; i < bytes.length; i += macBytes.length) {
+		                System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
+		            }
+		            
+		            InetAddress address = InetAddress.getByName(ipStr);
+		            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
+		            DatagramSocket socket = new DatagramSocket();
+		            socket.send(packet);
+		            socket.close();
+		            return true;		            
+		        }
+		        catch (Exception e) {
+		        	return false;
+		        }
+	}
+
+    private static byte[] getMacBytes(String macStr) throws IllegalArgumentException {
+        byte[] bytes = new byte[6];
+        String[] hex = macStr.split("(\\:|\\-)");
+        if (hex.length != 6) {
+            throw new IllegalArgumentException("Invalid MAC address.");
+        }
+        try {
+            for (int i = 0; i < 6; i++) {
+                bytes[i] = (byte) Integer.parseInt(hex[i], 16);
+            }
+        }
+        catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid hex digit in MAC address.");
+        }
+        return bytes;
+    }
 	
 	private boolean getServer(String serverIP) {
 		have = false;
 		Iterator<Server> server = displayList.iterator();
 		while (server.hasNext()) {
 			Server current_server = server.next();
-			if (current_server.getServerIP().getHostAddress().equals(serverIP.replace("/", ""))) {
+			if (current_server.getServerIP().getHostAddress().equals(
+					serverIP.replace("/", ""))) {
 				have = true;
 			}
 		}
@@ -106,33 +150,36 @@ public class Servers {
 		}
 		return serverInfo;
 	}
-	
+
 	private String checkStatus(Server current_server) {
 		status = "offline";
 		Iterator<Server> servers = serverList.iterator();
-		if(serverList.size() > 0) {
-			while(servers.hasNext()) {
+		if (serverList.size() > 0) {
+			while (servers.hasNext()) {
 				Server current_server_list = servers.next();
-				if(current_server.hostname.equals(current_server_list.hostname)) {
+				if (current_server.hostname
+						.equals(current_server_list.hostname)) {
 					status = "online";
-					Log.d(tag, "Device ["+current_server.hostname+"] is online");
-					current_server_list.setServerID(current_server.getServerID());
-					if(current_server.isPaired()) {
+					Log.d(tag, "Device [" + current_server.hostname
+							+ "] is online");
+					current_server_list.setServerID(current_server
+							.getServerID());
+					if (current_server.isPaired()) {
 						status = "ponline";
-						Log.d(tag, "Device ["+current_server.hostname+"] is paired");
+						Log.d(tag, "Device [" + current_server.hostname
+								+ "] is paired");
 					} else {
 						status = "online";
 					}
-					
+
 				}
 			}
 		} else {
-			Log.d(tag, "Device ["+current_server.hostname+"] is offline");
+			Log.d(tag, "Device [" + current_server.hostname + "] is offline");
 			status = "offline";
 		}
 		return status;
 	}
-	
 
 	public void discover() throws Exception {
 		serverList.clear();
@@ -159,7 +206,8 @@ public class Servers {
 				clientSocket.receive(receivePacket);
 
 				addToServerList(receivePacket.getAddress());
-				Log.e(tag, "Discovered server: " +(receivePacket.getAddress().toString()));
+				Log.e(tag, "Discovered server: "
+						+ (receivePacket.getAddress().toString()));
 				Thread.sleep(500);
 			}
 			clientSocket.close();
@@ -211,10 +259,10 @@ public class Servers {
 	public String cancelShutdown(int serverID) {
 		return doSend("cancel", getServer(serverID));
 	}
-	
+
 	private Server getServer(int serverID) {
 		Iterator<Server> servers = displayList.iterator();
-		if(servers.hasNext()) {
+		if (servers.hasNext()) {
 			Log.d(tag, "getServer has next");
 		}
 		while (servers.hasNext()) {

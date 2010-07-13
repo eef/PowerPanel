@@ -5,6 +5,7 @@ import os
 import socket
 import wx
 import xml.dom.minidom
+import sys
 from threading import *
 
 ID_START = wx.NewId()
@@ -50,10 +51,13 @@ class  Handler(object):
     return res
         
   def handle_pair(self):
+    #get MAC stuff  
     # Mocking some data until I get it in a config
-    res = "{ 'pairaccepted' : 'yes', 'pkey':'123456788','mac':'00-1F-D0-5C-3A-BB'}"
+    res = "{ 'pairaccepted' : 'yes', 'pkey':'123456788','mac':"+ get_mac_address() + "'}"
     return res
         
+
+    
   def handle(self, type, * args, ** kwargs):
     func = getattr(self, 'handle_%s' % type, None)
     if func is None:
@@ -98,6 +102,22 @@ class Config():
       return False
     else:
       print dom.getElementsByTagName("config").childNodes
+
+  def get_mac_address():
+    #this copied directly and needs to be changed to deal with multiple interfaces other OS's and generally improived
+    if sys.platform == 'win32':
+      for line in os.popen("ipconfig /all"):
+        if line.lstrip().startswith('Physical Address'):
+          mac = line.split(':')[1].strip().replace('-', ':')
+          print mac
+          return mac
+    else:
+    # mac = os.popen("/sbin/ifconfig|grep Ether|awk {'print $5'}").read()[:-1]
+      for line in os.popen("/sbin/ifconfig"):
+        if 'Ether' in line:
+          mac = line.split()[4]
+      print mac
+      return mac
 
 ID_START = wx.NewId()
 ID_STOP = wx.NewId()
