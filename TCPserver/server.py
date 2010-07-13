@@ -186,7 +186,7 @@ class MainFrame(wx.Frame):
 
   def server_stop(self, event):
     if self.worker:
-      self.status.SetLabel('Shutting server down...')
+      self.status.SetLabel('Shutting server down')
       self.worker.abort()
 
   def OnResult(self, event):
