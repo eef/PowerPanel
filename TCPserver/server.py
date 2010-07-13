@@ -10,13 +10,6 @@ from threading import *
 ID_START = wx.NewId()
 ID_STOP = wx.NewId()
 
-class Server():
-  def __init__(self):
-    HOST = socket.gethostbyname(socket.gethostname())
-    PORT = 2501
-    server = SocketServer.UDPServer((HOST, PORT), Comms)
-    server.serve_forever()
-
 class  Handler(object):
     
   def format_secs(self, seconds):
@@ -145,12 +138,20 @@ class WorkerThread(Thread):
 
 class MainFrame(wx.Frame):
   def __init__(self, parent, id):
-    wx.Frame.__init__(self, parent, id, 'Shutdown')
+    wx.Frame.__init__(self, parent, id, 'Shutdown', size=(200,130))
+    self.SetSizeHints(200,130,200,130)
+    
+    start_btn = wx.Button(self, ID_START, 'Start', pos=(5,10))
+    stop_btn = wx.Button(self, ID_STOP, 'Stop', pos=(100,10))
+    self.status = wx.StaticText(self, -1, '', pos=(10, 50))
 
-    wx.Button(self, ID_START, 'Start', pos=(0, 0))
-    wx.Button(self, ID_STOP, 'Stop', pos=(0, 50))
-    self.status = wx.StaticText(self, -1, '', pos=(0, 100))
+    hbox = wx.BoxSizer()
 
+    hbox.Add(start_btn, flag=wx.TOP | wx.BOTTOM | wx.LEFT, border=5)
+    hbox.Add(stop_btn, flag=wx.TOP | wx.BOTTOM | wx.RIGHT, border=5)
+
+    vbox = wx.BoxSizer(wx.VERTICAL)
+    vbox.Add(hbox, proportion=0, flag=wx.EXPAND)
     self.Bind(wx.EVT_BUTTON, self.server_start, id=ID_START)
     self.Bind(wx.EVT_BUTTON, self.server_stop, id=ID_STOP)
 
