@@ -152,7 +152,7 @@ class MainFrame(wx.Frame):
     self.status = wx.StaticText(self, -1, '', pos=(0, 100))
 
     self.Bind(wx.EVT_BUTTON, self.server_start, id=ID_START)
-    self.Bind(wx.EVT_BUTTON, self.server_top, id=ID_STOP)
+    self.Bind(wx.EVT_BUTTON, self.server_stop, id=ID_STOP)
 
     EVT_RESULT(self, self.OnResult)
 
