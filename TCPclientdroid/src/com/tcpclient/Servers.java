@@ -183,7 +183,7 @@ public class Servers {
 
 	public void discover() throws Exception {
 		serverList.clear();
-		InetAddress broadcastIP = InetAddress.getByName("192.168.0.255");
+		InetAddress dest = InetAddress.getByName(broadcastIP.getHostAddress());
 		if (broadcastIP == null) {
 			Log.e(tag, "shit the bed...no broadcast");
 		}
@@ -194,7 +194,7 @@ public class Servers {
 			byte[] receiveData = new byte[1024];
 			sendData = "hello".getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
-					sendData.length, broadcastIP, 2501);
+					sendData.length, dest, 2501);
 			clientSocket.send(sendPacket);
 			DatagramPacket receivePacket = new DatagramPacket(receiveData,
 					receiveData.length);
