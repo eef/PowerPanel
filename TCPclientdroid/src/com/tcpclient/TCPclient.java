@@ -51,7 +51,6 @@ public class TCPclient extends ListActivity {
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
-		makeToast("Finding servers...");
 		new Construct().execute();
 	}
 
@@ -65,7 +64,7 @@ public class TCPclient extends ListActivity {
 		String item = complist.get(position);
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
-			makeToast("Pairing: " + object.getString("name"));
+			makeToast("Pairing: " + object.getString("name"), false);
 			pairReq(position);
 		} catch (JSONException e) {
 			Log.e(tag, "failed to serialize select item");
@@ -93,26 +92,18 @@ public class TCPclient extends ListActivity {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()) {
 		case PAIR_ID:
-			AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
-					.getMenuInfo();
 			pairReq(info.position);
 			break;
 		case SHUTDOWN_ID:
-			AdapterView.AdapterContextMenuInfo info1 = (AdapterView.AdapterContextMenuInfo) item
-					.getMenuInfo();
-			shutdown(info1.position);
+			shutdown(info.position);
 			break;
 		case CANCEL_ID:
-			AdapterView.AdapterContextMenuInfo info3 = (AdapterView.AdapterContextMenuInfo) item
-					.getMenuInfo();
-
-			cancel(info3.position);
+			cancel(info.position);
 			break;
 		}
-
 		return (super.onOptionsItemSelected(item));
 	}
 
@@ -124,20 +115,21 @@ public class TCPclient extends ListActivity {
 		} catch (JSONException e) {
 			Log.e(tag, e.getMessage());
 		}
-		makeToast("Pairing...");
+		makeToast("Pairing...", false);
 		new Pair().execute();
 	}
 
 	private void processShutdown(int idd) {
 		id = idd;
-		makeToast("Shutting down..");
+		makeToast("Shutting down..", false);
 		new Shutdown().execute();
 	}
 
 	private void processCancel(int idd) {
 		id = idd;
-		makeToast("Shutdown cancelled...");
+		makeToast("Cancelling shutdown", false);
 		new CancelShutdown().execute();
+		makeToast(status, false);
 	}
 
 	private void shutdown(int comp) {
@@ -225,6 +217,7 @@ public class TCPclient extends ListActivity {
 					icon.setImageResource(R.drawable.online);
 				}
 			} catch (JSONException e) {
+				makeToast(e.getMessage(), true);
 				Log.e(tag, e.getMessage());
 			}
 
@@ -247,7 +240,7 @@ public class TCPclient extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case REFRESH_ID:
-			makeToast("Refreshing servers...");
+			makeToast("Refreshing servers...", false);
 			new RefreshList().execute();
 			return true;
 		case EXIT_ID:
@@ -261,8 +254,8 @@ public class TCPclient extends ListActivity {
 		onStop();
 	}
 
-	private void makeAlert(String msg) {
-		new AlertDialog.Builder(this).setTitle("Exception").setMessage(msg)
+	private void makeAlert(String msg, String title) {
+		new AlertDialog.Builder(this).setTitle(title).setMessage(msg)
 				.setNeutralButton("Close",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dlg, int sumthin) {
@@ -271,8 +264,14 @@ public class TCPclient extends ListActivity {
 						}).show();
 	}
 
-	private void makeToast(String msg) {
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	private void makeToast(String msg, Boolean len) {
+		int length;
+		if(len) {
+			length = Toast.LENGTH_LONG;
+		} else {
+			length = Toast.LENGTH_SHORT;
+		}
+		Toast.makeText(this, msg, length).show();
 	}
 
 	class Construct extends AsyncTask<Void, String, Void> {
