@@ -1,18 +1,20 @@
-import time
-
-import SocketServer
-import os
-import socket
-import wx
-import xml.dom.minidom
 import sys
-from threading import *
+import os
+from wx import wx, Frame, App, Menu, MenuBar, EVT_MENU, EVT_BUTTON
+from twisted.python import log
+from twisted.internet import wxreactor
+from twisted.internet.protocol import DatagramProtocol
+wxreactor.install()
+from twisted.internet import reactor
 
-ID_START = wx.NewId()
-ID_STOP = wx.NewId()
+ID_EXIT  = 101
+ID_START  = 102
+ID_STOP  = 103
+ID_CFG  = 104
+ID_ABOUT = 105
 
 class  Handler(object):
-    
+
   def format_secs(self, seconds):
     hours = seconds / 3600
     seconds -= 3600 * hours
@@ -27,6 +29,7 @@ class  Handler(object):
   def handle_shutdown(self, options={"delay":"3000"}):
     shutdown_string = "shutdown /s /t %s" % options['delay']
     os.system(shutdown_string)
+    print "Shutting down..."
     res = "Computer will shutdown in %s " % self.format_secs(int(options['delay']))
     return res
         
@@ -51,9 +54,7 @@ class  Handler(object):
     return res
         
   def handle_pair(self):
-    #get MAC stuff  
-    # Mocking some data until I get it in a config
-    res = "{ 'pairaccepted' : 'yes', 'pkey':'123456788','mac':"+ get_mac_address() + "'}"
+    res = "{ 'pairaccepted' : 'yes', 'pkey':'123456788','mac':'asdfghjkl'}"
     return res
         
 
@@ -64,146 +65,104 @@ class  Handler(object):
       return False
     return func(*args, ** kwargs)
 
-class Comms(SocketServer.BaseRequestHandler):
-
-  def handle(self, options={}):
+class MyProtocol(DatagramProtocol):
+  def datagramReceived(self, data, (host, port)):
     handler = Handler()
-    data = self.request[0].strip()
-    socket = self.request[1]
-    print "%s wrote %s" % (self.client_address[0], data)
+    print "received %r from %s:%d" % (data, host, port)
     res = handler.handle(data)
-    if res == False:
-      res = "Unknown command"
-    socket.sendto(res, self.client_address)
+    self.transport.write(res, (host, port))
 
-class Config():
 
-  def getText(self, nodelist):
-    rc = []
-    for node in nodelist:
-      if node.nodeType == node.TEXT_NODE:
-        rc.append(node.data)
-    return ''.join(rc)
-
-  def is_setup(self, element):
-    if element.attributes["saved"].value == 1:
-      return True
-    else:
-      return False
-
-  def load_dom(self):
-    dom = xml.dom.minidom.parse("config.xml")
-    return dom
-  
-  def load(self):
-    dom = self.load_dom()
-    saved = dom.getElementsByTagName("config")[0]
-    if self.is_setup(saved):
-      return False
-    else:
-      print dom.getElementsByTagName("config").childNodes
-
-  def get_mac_address():
-    #this copied directly and needs to be changed to deal with multiple interfaces other OS's and generally improived
-    if sys.platform == 'win32':
-      for line in os.popen("ipconfig /all"):
-        if line.lstrip().startswith('Physical Address'):
-          mac = line.split(':')[1].strip().replace('-', ':')
-          print mac
-          return mac
-    else:
-    # mac = os.popen("/sbin/ifconfig|grep Ether|awk {'print $5'}").read()[:-1]
-      for line in os.popen("/sbin/ifconfig"):
-        if 'Ether' in line:
-          mac = line.split()[4]
-      print mac
-      return mac
-
-ID_START = wx.NewId()
-ID_STOP = wx.NewId()
-
-EVT_RESULT_ID = wx.NewId()
-
-def EVT_RESULT(win, func):
-  win.Connect(-1, -1, EVT_RESULT_ID, func)
-
-class ResultEvent(wx.PyEvent):
-  def __init__(self, data):
-    wx.PyEvent.__init__(self)
-    self.SetEventType(EVT_RESULT_ID)
-    self.data = data
-
-class WorkerThread(Thread):
-  def __init__(self, notify_window):
-    Thread.__init__(self)
-    self._notify_window = notify_window
-    self._want_abort = 0
-    self.start()
-
-  def run(self):
-    HOST = socket.gethostbyname(socket.gethostname())
-    PORT = 2501
-    self.server = SocketServer.UDPServer((HOST, PORT), Comms)
-    self.server.serve_forever()
-    while(self._want_abort == 0):
-      time.sleep(1)
-      if self._want_abort:
-        wx.PostEvent(self._notify_window, ResultEvent(None))
-        return
-    wx.PostEvent(self._notify_window, ResultEvent(10))
-
-  def abort(self):
-    self.server.shutdown()
-    self._want_abort = 1
-
-class MainFrame(wx.Frame):
-  def __init__(self, parent, id):
-    wx.Frame.__init__(self, parent, id, 'Shutdown', size=(200,130))
-    self.SetSizeHints(200,130,200,130)
-    
-    start_btn = wx.Button(self, ID_START, 'Start', pos=(5,10))
-    stop_btn = wx.Button(self, ID_STOP, 'Stop', pos=(100,10))
+class MyFrame(Frame):
+  def __init__(self, parent, ID, title):
+    Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(200, 160))
+    self.SetSizeHints(200,160,200,160)
+    self.CreateStatusBar()
+    file_menu = Menu()
+    help_menu = Menu()
+    file_menu.Append(ID_EXIT, "E&xit", "Exit Power Panel")
+    file_menu.Append(ID_CFG, "C&onfig", "Configure Power Panel")
+    help_menu.Append(ID_ABOUT, "A&bout", "About Power Panel")
+    self.SetStatusText("Server: Offline")
+    menuBar = MenuBar()
+    menuBar.Append(file_menu, "&File")
+    menuBar.Append(help_menu, "&Help")
+    self.SetMenuBar(menuBar)
+    EVT_MENU(self, ID_EXIT,  self.DoExit)
+    EVT_MENU(self, ID_ABOUT,  self.OnAboutBox)
+    EVT_MENU(self, ID_CFG,  self.OpenConfig)
+    wx.Button(self, ID_START, 'Start', pos=(10, 10))
+    wx.Button(self, ID_STOP, 'Stop', pos=(100, 10))
     self.status = wx.StaticText(self, -1, '', pos=(10, 50))
+    self.Bind(wx.EVT_BUTTON, self.OnStart, id=ID_START)
+    self.Bind(wx.EVT_BUTTON, self.OnStop, id=ID_STOP)
+    self.Bind(wx.EVT_CLOSE, self.OnClose)
 
-    hbox = wx.BoxSizer()
+  def DoExit(self, event):
+    reactor.stop()
+    exit()
+    
+  def OnClose(self, event):
+    reactor.stop()
+    exit()
+    
+  def OpenConfig(self, event):
+    cfg_frame = Config(None, -1, "Configuration")
+    cfg_frame.Show(True)
+    return True
+    
+  def OnStart(self, event):
+    self.port = reactor.listenUDP(2501, MyProtocol())
+    self.SetStatusText("Server: Online")
+      
+  def OnStop(self, event):
+    self.port.stopListening()
+    self.SetStatusText("Server: Offline")
+    
+  def OnAboutBox(self, event):
+    description = """Power Panel is a remote shutdown application for Android based phones."""
+    licence = """Fuck yer license."""
+    info = wx.AboutDialogInfo()
+    info.SetName('Power Panel')
+    info.SetVersion('1.0')
+    info.SetDescription(description)
+    info.SetCopyright('(C) 2010 WellBaked')
+    info.SetWebSite('http://www.well-baked.net')
+    info.SetLicence(licence)
+    info.AddDeveloper('Billy McGregor & Arthur Canal')
+    info.AddDocWriter('Billy McGregor & Arthur Canal')
+    info.AddArtist('WellBaked')
+    info.AddTranslator('Billy McGregor & Arthur Canal')
+    wx.AboutBox(info)
 
-    hbox.Add(start_btn, flag=wx.TOP | wx.BOTTOM | wx.LEFT, border=5)
-    hbox.Add(stop_btn, flag=wx.TOP | wx.BOTTOM | wx.RIGHT, border=5)
 
-    vbox = wx.BoxSizer(wx.VERTICAL)
-    vbox.Add(hbox, proportion=0, flag=wx.EXPAND)
-    self.Bind(wx.EVT_BUTTON, self.server_start, id=ID_START)
-    self.Bind(wx.EVT_BUTTON, self.server_stop, id=ID_STOP)
 
-    EVT_RESULT(self, self.OnResult)
-
-    self.worker = None
-
-  def server_start(self, event):
-    if not self.worker:
-      self.status.SetLabel('Starting server')
-      self.worker = WorkerThread(self)
-
-  def server_stop(self, event):
-    if self.worker:
-      self.status.SetLabel('Shutting server down')
-      self.worker.abort()
-
-  def OnResult(self, event):
-    if event.data is None:
-      self.status.SetLabel('Server shutdown complete')
-    else:
-      self.status.SetLabel('Shizzle: %s' % event.data)
-    self.worker = None
-
-class MainApp(wx.App):
+class MyApp(App):
   def OnInit(self):
-    self.frame = MainFrame(None, -1)
-    self.frame.Show(True)
-    self.SetTopWindow(self.frame)
+    frame = MyFrame(None, -1, "Power Panel")
+    frame.Show(True)
+    self.SetTopWindow(frame)
     return True
 
-if __name__ == '__main__':
-  app = MainApp(0)
-  app.MainLoop()
+
+def PowerPanel():
+  log.startLogging(sys.stdout)
+  app = MyApp(0)
+  reactor.registerWxApp(app)
+  reactor.run()
   
+  
+class Config(Frame):
+  def __init__(self, parent, ID, title):
+    Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(200, 100))
+    self.SetSizeHints(200,100,200,100)
+    self.CreateStatusBar()
+    self.SetStatusText("Configuration")
+    self.Bind(wx.EVT_CLOSE, self.OnClose)
+    
+  def OnClose(self, event):
+    self.Hide()
+
+
+if __name__ == '__main__':
+  PowerPanel()
