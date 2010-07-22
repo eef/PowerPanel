@@ -8,12 +8,16 @@ from twisted.internet.protocol import DatagramProtocol
 wxreactor.install()
 from twisted.internet import reactor
 from hashlib import sha1
+import xml.dom.minidom
 
 ID_EXIT  = 101
 ID_START  = 102
 ID_STOP  = 103
 ID_CFG  = 104
 ID_ABOUT = 105
+ID_EXIT_CONFIG  = 106
+ID_SAVE_CONFIG  = 107
+ID_SALT  = 108
 
 class  Handler(object):
 
@@ -26,16 +30,16 @@ class  Handler(object):
           print mac
           return mac
     else:
-    # mac = os.popen("/sbin/ifconfig|grep Ether|awk {'print $5'}").read()[:-1]
       for line in os.popen("/sbin/ifconfig"):
         if 'Ether' in line:
           mac = line.split()[4]
-      print "get mac address function called and output is:" + mac
       return mac
 
   def get_pkey(self):
+    self.settings = Settings()
     mac = self.get_mac_address()
-    salt = "akira45r"
+    salt = self.settings.get_salt()
+    print mac + salt
     hashed = hashlib.sha1(mac + salt)
     return hashed.hexdigest()
   
@@ -88,6 +92,7 @@ class  Handler(object):
     elif result == wx.ID_CANCEL:
       pair = "no"
     res = "{'pairaccepted':'%s', 'pkey':'%s','mac':'%s','name':'%s'}" % (pair, self.get_pkey(), self.get_mac_address(), os.getenv("COMPUTERNAME"))
+    print res
     return res
         
 
@@ -108,28 +113,43 @@ class MyProtocol(DatagramProtocol):
 
 class MyFrame(Frame):
   def __init__(self, parent, ID, title):
-    Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(200, 160))
-    self.SetSizeHints(200,160,200,160)
+    Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(180, 160))
+    self.settings = Settings()
+    self.settings.get_salt()
+    self.SetSizeHints(180,160,180,160)
     self.CreateStatusBar()
     file_menu = Menu()
     help_menu = Menu()
     file_menu.Append(ID_EXIT, "E&xit", "Exit Power Panel")
     file_menu.Append(ID_CFG, "C&onfig", "Configure Power Panel")
     help_menu.Append(ID_ABOUT, "A&bout", "About Power Panel")
-    self.SetStatusText("Server: Offline")
     menuBar = MenuBar()
     menuBar.Append(file_menu, "&File")
     menuBar.Append(help_menu, "&Help")
+    self.SetStatusText("Server: Offline")
     self.SetMenuBar(menuBar)
     EVT_MENU(self, ID_EXIT,  self.DoExit)
     EVT_MENU(self, ID_ABOUT,  self.OnAboutBox)
     EVT_MENU(self, ID_CFG,  self.OpenConfig)
-    wx.Button(self, ID_START, 'Start', pos=(10, 10))
-    wx.Button(self, ID_STOP, 'Stop', pos=(100, 10))
-    self.status = wx.StaticText(self, -1, '', pos=(10, 50))
+
+    panel = wx.Panel(self, -1)
+    vbox = wx.BoxSizer(wx.VERTICAL)
+
+    vbox.Add((-1, 25))
+
+    hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+    btn1 = wx.Button(panel, ID_START, 'Start', size=(70, 30))
+    hbox5.Add(btn1, 0)
+    btn2 = wx.Button(panel, ID_STOP, 'Stop', size=(70, 30))
+    hbox5.Add(btn2, 0, wx.LEFT | wx.BOTTOM , 5)
+    vbox.Add(hbox5, 0, wx.ALIGN_RIGHT | wx.RIGHT, 10)
+
     self.Bind(wx.EVT_BUTTON, self.OnStart, id=ID_START)
     self.Bind(wx.EVT_BUTTON, self.OnStop, id=ID_STOP)
     self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+    panel.SetSizer(vbox)
+    self.Centre()
 
   def DoExit(self, event):
     reactor.stop()
@@ -145,8 +165,15 @@ class MyFrame(Frame):
     return True
     
   def OnStart(self, event):
-    self.port = reactor.listenUDP(2501, MyProtocol())
-    self.SetStatusText("Server: Online")
+    if self.settings.load() == True:
+      self.port = reactor.listenUDP(2501, MyProtocol())
+      self.SetStatusText("Server: Online")
+    else:
+      dlg = wx.MessageDialog(None, "No configuration present.", "No config", wx.OK|wx.ICON_INFORMATION)
+      dlg.ShowModal()
+      dlg.Destroy()
+      cfg_frame = Config(None, -1, "Configuration")
+      cfg_frame.Show(True)
       
   def OnStop(self, event):
     self.port.stopListening()
@@ -160,12 +187,12 @@ class MyFrame(Frame):
     info.SetVersion('1.0')
     info.SetDescription(description)
     info.SetCopyright('(C) 2010 WellBaked')
-    info.SetWebSite('http://www.well-baked.net')
+    info.SetWebSite('http://www.wellbaked.net')
     info.SetLicence(licence)
-    info.AddDeveloper('Billy McGregor & Arthur Canal')
-    info.AddDocWriter('Billy McGregor & Arthur Canal')
+    info.AddDeveloper('Will McGregor / Arthur Canal')
+    info.AddDocWriter('Will McGregor / Arthur Canal')
     info.AddArtist('WellBaked')
-    info.AddTranslator('Billy McGregor & Arthur Canal')
+    info.AddTranslator('Will McGregor / Arthur Canal')
     wx.AboutBox(info)
 
 
@@ -183,18 +210,105 @@ def PowerPanel():
   app = MyApp(0)
   reactor.registerWxApp(app)
   reactor.run()
+
+
+class Settings():
+
+  def getText(self, nodelist):
+    rc = []
+    for node in nodelist:
+      if node.nodeType == node.TEXT_NODE:
+        rc.append(node.data)
+    return ''.join(rc)
+
+  def is_setup(self, element):
+    if int(element.attributes["saved"].value) == 1:
+      print "is setup true"
+      return True
+    else:
+      print "is setup false"
+      return False
+
+  def load_dom(self):
+    dom = xml.dom.minidom.parse("config.xml")
+    return dom
+
+  def load(self):
+    dom = self.load_dom()
+    saved = dom.getElementsByTagName("config")[0]
+    if self.is_setup(saved):
+      print "true"
+      return True
+    else:
+      print "False"
+      return False
+
+  def get_salt(self):
+    dom = self.load_dom()
+    parent = dom.getElementsByTagName("config")[0]
+    salt_node = parent.getElementsByTagName("salt")[0]
+    return self.getText(salt_node.childNodes)
+    
+
+  def getText(self, nodelist):
+    rc = []
+    for node in nodelist:
+      if node.nodeType == node.TEXT_NODE:
+        rc.append(node.data)
+    return ''.join(rc)
+
+  def save_salt(self, salt):
+    file = open("config.xml", "w+")
+    salted = """<?xml version="1.0" encoding="windows-1252"?>
+<config saved="1">
+  <salt>%s</salt>
+</config>
+  """ % salt
+    file.write(salted)
+    file.close()
   
   
 class Config(Frame):
   def __init__(self, parent, ID, title):
-    Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(200, 100))
-    self.SetSizeHints(200,100,200,100)
+    Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(390, 150))
     self.CreateStatusBar()
+    self.settings = Settings()
     self.SetStatusText("Configuration")
     self.Bind(wx.EVT_CLOSE, self.OnClose)
+    self.Bind(wx.EVT_BUTTON, self.OnClose, id=ID_EXIT_CONFIG)
+    self.Bind(wx.EVT_BUTTON, self.SaveSalt, id=ID_SAVE_CONFIG)
+    panel = wx.Panel(self, -1)
+
+    vbox = wx.BoxSizer(wx.VERTICAL)
+
+    hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+    st1 = wx.StaticText(panel, -1, 'Password')
+    hbox1.Add(st1, 0, wx.RIGHT, 8)
+    self.tc = wx.TextCtrl(panel, ID_SALT)
+    if self.settings.load() == True:
+      self.tc.SetValue(self.settings.get_salt())
+    hbox1.Add(self.tc, 1)
+    vbox.Add(hbox1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
+
+    vbox.Add((-1, 25))
+
+    hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+    btn1 = wx.Button(panel, ID_SAVE_CONFIG, 'Save', size=(70, 30))
+    hbox5.Add(btn1, 0)
+    btn2 = wx.Button(panel, ID_EXIT_CONFIG, 'Cancel', size=(70, 30))
+    hbox5.Add(btn2, 0, wx.LEFT | wx.BOTTOM , 5)
+    vbox.Add(hbox5, 0, wx.ALIGN_RIGHT | wx.RIGHT, 10)
+
+    panel.SetSizer(vbox)
+    self.Centre()
     
   def OnClose(self, event):
     self.Hide()
+
+  def SaveSalt(self, event):
+    self.settings = Settings()
+    print self.tc.GetValue()
+    self.settings.save_salt(self.tc.GetValue())
 
 
 if __name__ == '__main__':
