@@ -22,12 +22,10 @@ ID_SALT  = 108
 class  Handler(object):
 
   def get_mac_address(self):
-    #this copied directly and needs to be changed to deal with multiple interfaces other OS's and generally improived
     if sys.platform == 'win32':
       for line in os.popen("ipconfig /all"):
         if line.lstrip().startswith('Physical Address'):
           mac = line.split(':')[1].strip().replace('-', ':')
-          print mac
           return mac
     else:
       for line in os.popen("/sbin/ifconfig"):
@@ -39,7 +37,6 @@ class  Handler(object):
     self.settings = Settings()
     mac = self.get_mac_address()
     salt = self.settings.get_salt()
-    print mac + salt
     hashed = hashlib.sha1(mac + salt)
     return hashed.hexdigest()
   
@@ -58,7 +55,6 @@ class  Handler(object):
   def handle_shutdown(self, options={"delay":"3000"}):
     shutdown_string = "shutdown /s /t %s" % options['delay']
     os.system(shutdown_string)
-    print "Shutting down..."
     res = "Computer will shutdown in %s " % self.format_secs(int(options['delay']))
     return res
         
@@ -92,7 +88,6 @@ class  Handler(object):
     elif result == wx.ID_CANCEL:
       pair = "no"
     res = "{'pairaccepted':'%s', 'pkey':'%s','mac':'%s','name':'%s'}" % (pair, self.get_pkey(), self.get_mac_address(), os.getenv("COMPUTERNAME"))
-    print res
     return res
         
 
@@ -106,7 +101,6 @@ class  Handler(object):
 class MyProtocol(DatagramProtocol):
   def datagramReceived(self, data, (host, port)):
     handler = Handler()
-    print "received %r from %s:%d" % (data, host, port)
     res = handler.handle(data)
     self.transport.write(res, (host, port))
 
@@ -223,10 +217,8 @@ class Settings():
 
   def is_setup(self, element):
     if int(element.attributes["saved"].value) == 1:
-      print "is setup true"
       return True
     else:
-      print "is setup false"
       return False
 
   def load_dom(self):
@@ -237,10 +229,8 @@ class Settings():
     dom = self.load_dom()
     saved = dom.getElementsByTagName("config")[0]
     if self.is_setup(saved):
-      print "true"
       return True
     else:
-      print "False"
       return False
 
   def get_salt(self):
@@ -307,7 +297,6 @@ class Config(Frame):
 
   def SaveSalt(self, event):
     self.settings = Settings()
-    print self.tc.GetValue()
     self.settings.save_salt(self.tc.GetValue())
 
 
