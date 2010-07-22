@@ -36,7 +36,6 @@ public class TCPclient extends ListActivity {
 	private String tag = "Main Activity ";
 	private List<String> complist = new ArrayList<String>();
 	public static final int REFRESH_ID = Menu.FIRST + 1;
-	public static final int EXIT_ID = Menu.FIRST + 2;
 
 	private static final int PAIR_ID = Menu.FIRST + 3;
 	private static final int SHUTDOWN_ID = Menu.FIRST + 4;
@@ -51,8 +50,6 @@ public class TCPclient extends ListActivity {
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
-		DataHelper database = new DataHelper(thisContext);
-		//database.deleteAll();
 		new Construct().execute();
 	}
 
@@ -235,8 +232,7 @@ public class TCPclient extends ListActivity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, REFRESH_ID, 0, "Refresh");
-		menu.add(0, EXIT_ID, 0, "Exit");
+		menu.add(0, REFRESH_ID, 0, "Refresh").setIcon(R.drawable.refresh);
 		return true;
 	}
 
@@ -245,9 +241,6 @@ public class TCPclient extends ListActivity {
 		case REFRESH_ID:
 			makeToast("Refreshing servers...", false);
 			new RefreshList().execute();
-			return true;
-		case EXIT_ID:
-			exitApp();
 			return true;
 		}
 		return false;
