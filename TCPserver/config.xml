@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="windows-1252"?>
-<config saved="1">
-  <name>Home PC</name>
-  <pkey>123456</pkey>
-  <pair>yes</pair>
+<config saved="0">
+  <salt></salt>
 </config>
+  
