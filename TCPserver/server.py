@@ -1,11 +1,13 @@
+import hashlib
 import sys
 import os
-from wx import wx, Frame, App, Menu, MenuBar, EVT_MENU, EVT_BUTTON
+from wx import wx, Frame, App, Menu, MenuBar, EVT_MENU
 from twisted.python import log
 from twisted.internet import wxreactor
 from twisted.internet.protocol import DatagramProtocol
 wxreactor.install()
 from twisted.internet import reactor
+from hashlib import sha1
 
 ID_EXIT  = 101
 ID_START  = 102
@@ -14,6 +16,29 @@ ID_CFG  = 104
 ID_ABOUT = 105
 
 class  Handler(object):
+
+  def get_mac_address(self):
+    #this copied directly and needs to be changed to deal with multiple interfaces other OS's and generally improived
+    if sys.platform == 'win32':
+      for line in os.popen("ipconfig /all"):
+        if line.lstrip().startswith('Physical Address'):
+          mac = line.split(':')[1].strip().replace('-', ':')
+          print mac
+          return mac
+    else:
+    # mac = os.popen("/sbin/ifconfig|grep Ether|awk {'print $5'}").read()[:-1]
+      for line in os.popen("/sbin/ifconfig"):
+        if 'Ether' in line:
+          mac = line.split()[4]
+      print "get mac address function called and output is:" + mac
+      return mac
+
+  def get_pkey(self):
+    mac = self.get_mac_address()
+    salt = "akira45r"
+    hashed = hashlib.sha1(mac + salt)
+    return hashed.hexdigest()
+  
 
   def format_secs(self, seconds):
     hours = seconds / 3600
@@ -50,11 +75,19 @@ class  Handler(object):
     return res
 
   def handle_hello(self):
-    res = "Found computer"
+    res = self.get_pkey()
     return res
         
   def handle_pair(self):
-    res = "{ 'pairaccepted' : 'yes', 'pkey':'123456788','mac':'asdfghjkl'}"
+    pair = "no"
+    dlg = wx.MessageDialog(None, "Do you want to pair?", "Confirm Pair", wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+    result = dlg.ShowModal()
+    dlg.Destroy()
+    if result == wx.ID_OK:
+      pair = "yes"
+    elif result == wx.ID_CANCEL:
+      pair = "no"
+    res = "{'pairaccepted':'%s', 'pkey':'%s','mac':'%s','name':'%s'}" % (pair, self.get_pkey(), self.get_mac_address(), os.getenv("COMPUTERNAME"))
     return res
         
 
