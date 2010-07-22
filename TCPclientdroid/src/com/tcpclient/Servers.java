@@ -34,10 +34,14 @@ public class Servers {
 	private List<Server> displayList = new ArrayList<Server>();
 	private String status = new String();
 	public int ipCount;
+	public boolean isSaved;
+	public String savedName;
+	DataHelper database;
 
 	public Servers(Context context) {
 		WifiManager wifi = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
+		database = new DataHelper(context);
 		try {
 			DhcpInfo dhcp = wifi.getDhcpInfo();
 			if (dhcp == null) {
@@ -64,6 +68,10 @@ public class Servers {
 		boolean server = getServer(newServerIP.toString());
 		Server bogla = new Server(nextID, newServerIP);
 		nextID += 1;
+		if(isSaved) {
+			bogla.setStatus("ponline");
+			bogla.setName(savedName);
+		}
 		serverList.add(bogla);
 		if (!server) {
 			displayList.add(bogla);
@@ -164,7 +172,7 @@ public class Servers {
 							+ "] is online");
 					current_server_list.setServerID(current_server
 							.getServerID());
-					if (current_server.isPaired()) {
+					if (isSaved) {
 						status = "ponline";
 						Log.d(tag, "Device [" + current_server.hostname
 								+ "] is paired");
@@ -204,7 +212,15 @@ public class Servers {
 			long end = t + 3000;
 			while (System.currentTimeMillis() < end) {
 				clientSocket.receive(receivePacket);
-
+				String modifiedSentence = new String(receivePacket.getData());
+				Log.e("Discover packet", modifiedSentence.trim());
+				String name = database.isSaved(modifiedSentence.trim());
+				if (name.length() > 0) {
+					isSaved = true;
+					savedName = name;
+				} else {
+					isSaved = false;
+				}
 				addToServerList(receivePacket.getAddress());
 				Log.e(tag, "Discovered server: "
 						+ (receivePacket.getAddress().toString()));
@@ -237,7 +253,9 @@ public class Servers {
 					// TODO: create setters/getters?
 					server.setMAC(object.getString("mac"));
 					server.setPKey(object.getString("pkey"));
+					server.setName(object.getString("name"));
 					server.setStatus("ponline");
+					database.insert(object.getString("name"), object.getString("pkey"), "none", object.getString("mac"));
 					// call 'sync' method
 					paired = true;
 				}
@@ -286,6 +304,7 @@ public class Servers {
 			clientSocket.send(sendPacket);
 			DatagramPacket receivePacket = new DatagramPacket(receiveData,
 					receiveData.length);
+			clientSocket.setSoTimeout(10000);
 			clientSocket.receive(receivePacket);
 			String modifiedSentence = new String(receivePacket.getData());
 			clientSocket.close();

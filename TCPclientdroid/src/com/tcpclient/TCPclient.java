@@ -51,6 +51,8 @@ public class TCPclient extends ListActivity {
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
+		DataHelper database = new DataHelper(thisContext);
+		//database.deleteAll();
 		new Construct().execute();
 	}
 
@@ -207,6 +209,7 @@ public class TCPclient extends ListActivity {
 			try {
 				JSONObject object = (JSONObject) new JSONTokener(item)
 						.nextValue();
+				Log.d("SHOW NAME", object.getString("name"));
 				label.setText(object.getString("name"));
 				ImageView icon = (ImageView) row.findViewById(R.id.icon);
 				if (object.getString("status").equals("ponline")) {

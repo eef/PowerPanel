@@ -94,9 +94,13 @@ public class Server {
 			this.hostname = serverIP.getHostName();
 	}
 	
-	public void setName(String name) {		
-		if (name.equals(""))
+	public void setName(String name) {
+		this.name = name;
+		if (name.equals("")) {
 			this.name = serverIP.getHostName();
+		} else {
+			this.name = name;
+		}
 	}
 	
 	public void setStatus(String string) {
