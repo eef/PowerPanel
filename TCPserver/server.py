@@ -267,6 +267,7 @@ class Config(Frame):
     self.Bind(wx.EVT_CLOSE, self.OnClose)
     self.Bind(wx.EVT_BUTTON, self.OnClose, id=ID_EXIT_CONFIG)
     self.Bind(wx.EVT_BUTTON, self.SaveSalt, id=ID_SAVE_CONFIG)
+    self.window = self
     panel = wx.Panel(self, -1)
 
     vbox = wx.BoxSizer(wx.VERTICAL)
@@ -285,7 +286,7 @@ class Config(Frame):
     hbox5 = wx.BoxSizer(wx.HORIZONTAL)
     btn1 = wx.Button(panel, ID_SAVE_CONFIG, 'Save', size=(70, 30))
     hbox5.Add(btn1, 0)
-    btn2 = wx.Button(panel, ID_EXIT_CONFIG, 'Cancel', size=(70, 30))
+    btn2 = wx.Button(panel, ID_EXIT_CONFIG, 'Close', size=(70, 30))
     hbox5.Add(btn2, 0, wx.LEFT | wx.BOTTOM , 5)
     vbox.Add(hbox5, 0, wx.ALIGN_RIGHT | wx.RIGHT, 10)
 
@@ -298,6 +299,7 @@ class Config(Frame):
   def SaveSalt(self, event):
     self.settings = Settings()
     self.settings.save_salt(self.tc.GetValue())
+    self.Hide()
 
 
 if __name__ == '__main__':
