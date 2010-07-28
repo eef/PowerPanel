@@ -71,7 +71,7 @@ class  Handler(object):
 
   def handle_hibernate(self):
     os.system("shutdown /h")
-    res = "Shutdown successful"
+    res = "Computer hibernating"
     return res
 
   def handle_hello(self):
