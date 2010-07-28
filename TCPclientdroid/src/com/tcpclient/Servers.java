@@ -36,6 +36,9 @@ public class Servers {
 	public int ipCount;
 	public boolean isSaved;
 	public String savedName;
+	public int compsOnline = 0;
+	public int compsOffline = 0;
+	public int compsPaired = 0;
 	DataHelper database;
 
 	public Servers(Context context) {
@@ -160,6 +163,9 @@ public class Servers {
 	}
 
 	private String checkStatus(Server current_server) {
+		compsOffline = 0;
+		compsPaired = 0;
+		compsOnline = 0;
 		status = "offline";
 		Iterator<Server> servers = serverList.iterator();
 		if (serverList.size() > 0) {
@@ -172,6 +178,7 @@ public class Servers {
 							+ "] is online");
 					current_server_list.setServerID(current_server
 							.getServerID());
+					compsOnline++;
 					if (isSaved) {
 						status = "ponline";
 						Log.d(tag, "Device [" + current_server.hostname
@@ -272,6 +279,14 @@ public class Servers {
 
 	public String shutdown(int serverID) {
 		return doSend("shutdown", getServer(serverID));
+	}
+	
+	public String hibernate(int serverID) {
+		return doSend("hibernate", getServer(serverID));
+	}
+	
+	public String getCompsOnline() {
+		return Integer.toString(compsOnline);
 	}
 
 	public String cancelShutdown(int serverID) {

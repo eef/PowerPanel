@@ -1,6 +1,5 @@
 package com.tcpclient;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -24,9 +22,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,16 +36,19 @@ public class TCPclient extends ListActivity {
 	private static final int PAIR_ID = Menu.FIRST + 3;
 	private static final int SHUTDOWN_ID = Menu.FIRST + 4;
 	private static final int CANCEL_ID = Menu.FIRST + 5;
+	private static final int HIBERNATE_ID = Menu.FIRST + 6;
 	private int id = 0;
 	Servers serversobject;
 	Context thisContext = this;
 	private String status;
+	private TextView compsonline;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
+		compsonline=(TextView)findViewById(R.id.compcount);
 		new Construct().execute();
 	}
 
@@ -57,6 +56,7 @@ public class TCPclient extends ListActivity {
 		complist = serversobject.getServerInfo();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
+		compsonline.setText(serversobject.getCompsOnline() + " computers online");
 	}
 
 	public void onListItemClick(ListView parent, View v, int position, long id) {
@@ -76,6 +76,7 @@ public class TCPclient extends ListActivity {
 		complist = serversobject.getServerInfo();
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
+		compsonline.setText(serversobject.getCompsOnline() + " computers online");
 	}
 
 	@Override
@@ -83,10 +84,12 @@ public class TCPclient extends ListActivity {
 			ContextMenu.ContextMenuInfo menuInfo) {
 		menu.add(Menu.NONE, SHUTDOWN_ID, Menu.NONE, "Shutdown")
 				.setAlphabeticShortcut('a');
+		menu.add(Menu.NONE, HIBERNATE_ID, Menu.NONE, "Hibernate")
+		.setAlphabeticShortcut('b');
 		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
-				.setAlphabeticShortcut('b');
+				.setAlphabeticShortcut('c');
 		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair").setAlphabeticShortcut(
-				'c');
+				'd');
 	}
 
 	@Override
@@ -98,6 +101,9 @@ public class TCPclient extends ListActivity {
 			break;
 		case SHUTDOWN_ID:
 			shutdown(info.position);
+			break;
+		case HIBERNATE_ID:
+			hibernate(info.position);
 			break;
 		case CANCEL_ID:
 			cancel(info.position);
@@ -123,6 +129,12 @@ public class TCPclient extends ListActivity {
 		makeToast("Shutting down..", false);
 		new Shutdown().execute();
 	}
+	
+	private void processHibernate(int idd) {
+		id = idd;
+		makeToast("Hibernating..", false);
+		new Hibernate().execute();
+	}
 
 	private void processCancel(int idd) {
 		id = idd;
@@ -146,6 +158,31 @@ public class TCPclient extends ListActivity {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 									processShutdown(id);
+								}
+							}).setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
+	}
+	
+	private void hibernate(int comp) {
+		String item = complist.get(comp);
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
+		}
+		if (id >= 0) {
+			new AlertDialog.Builder(this).setTitle(R.string.shutdown)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									processHibernate(id);
 								}
 							}).setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
@@ -331,6 +368,26 @@ public class TCPclient extends ListActivity {
 
 		protected Void doInBackground(Void... unused) {
 			status = serversobject.shutdown(id);
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			refreshList();
+			Toast.makeText(thisContext, "Refreshing servers...",
+					Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	class Hibernate extends AsyncTask<Void, Integer, Void> {
+
+		protected Void doInBackground(Void... unused) {
+			status = serversobject.hibernate(id);
 			return (null);
 		}
 
