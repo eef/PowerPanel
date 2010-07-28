@@ -7,6 +7,7 @@
     <string name="ok">Ok</string>
     <string name="shutdown">Shutdown Computer: Are you sure?</string>
     <string name="hibernate">Hibernate Computer: Are you sure?</string>
+    <string name="reboot">Reboot Computer: Are you sure?</string>
     <color name="tvbg">#7f7f7f</color>
     <color name="white">#ffffff</color>
 </resources>

@@ -41,8 +41,11 @@ public class DataHelper {
    public String isSaved(String pkey) {
 	   Cursor cursor = this.db.query(TABLE_NAME, new String[] {"name", "mac", "last_ip"}, "pkey = " + "'"+ pkey +"'", null, null, null, null);
 	   if(cursor.moveToFirst()) {
-		   return cursor.getString(0);
+		   String name = cursor.getString(0);
+		   cursor.close();
+		   return name;
 	   } else {
+		   cursor.close();
 		   return "";
 	   }
    }

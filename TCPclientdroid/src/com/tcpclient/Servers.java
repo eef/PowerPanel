@@ -67,16 +67,34 @@ public class Servers {
 		}
 	}
 
-	public void addToServerList(InetAddress newServerIP) {
+	public void addToServerList(InetAddress newServerIP, String pKey) {
 		boolean server = getServer(newServerIP.toString());
 		Server bogla = new Server(nextID, newServerIP);
+		Log.d("Addtoserverlist", pKey);
+		String name = database.isSaved(pKey);
+		if (name.length() > 0) {
+			isSaved = true;
+			savedName = name;
+			Log.d("isSaved", "Yes");
+		} else {
+			isSaved = false;
+			Log.d("isSaved", "No");
+		}
 		nextID += 1;
 		if(isSaved) {
+			Log.d("setting status to ponline", "Yes");
 			bogla.setStatus("ponline");
 			bogla.setName(savedName);
+			bogla.setPKey(pKey);
+			serverList.add(bogla);
+		} else {
+			Log.d("setting status to online", "Yes");
+			bogla.setStatus("online");
+			bogla.setPKey(pKey);
+			serverList.add(bogla);
 		}
-		serverList.add(bogla);
 		if (!server) {
+			Log.d("not in server list", "no");
 			displayList.add(bogla);
 		}
 	}
@@ -146,7 +164,6 @@ public class Servers {
 
 	public List<String> getServerInfo() {
 		Iterator<Server> server = displayList.iterator();
-		Log.d(tag, Integer.toString(serverList.size()));
 		ipCount = serverList.size();
 		while (server.hasNext()) {
 			Server current_server = server.next();
@@ -163,9 +180,6 @@ public class Servers {
 	}
 
 	private String checkStatus(Server current_server) {
-		compsOffline = 0;
-		compsPaired = 0;
-		compsOnline = 0;
 		status = "offline";
 		Iterator<Server> servers = serverList.iterator();
 		if (serverList.size() > 0) {
@@ -178,11 +192,9 @@ public class Servers {
 							+ "] is online");
 					current_server_list.setServerID(current_server
 							.getServerID());
-					compsOnline++;
-					if (isSaved) {
+					String name = database.isSaved(current_server.pKey);
+					if (name.length() > 0) {
 						status = "ponline";
-						Log.d(tag, "Device [" + current_server.hostname
-								+ "] is paired");
 					} else {
 						status = "online";
 					}
@@ -221,14 +233,7 @@ public class Servers {
 				clientSocket.receive(receivePacket);
 				String modifiedSentence = new String(receivePacket.getData());
 				Log.e("Discover packet", modifiedSentence.trim());
-				String name = database.isSaved(modifiedSentence.trim());
-				if (name.length() > 0) {
-					isSaved = true;
-					savedName = name;
-				} else {
-					isSaved = false;
-				}
-				addToServerList(receivePacket.getAddress());
+				addToServerList(receivePacket.getAddress(), modifiedSentence.trim());
 				Log.e(tag, "Discovered server: "
 						+ (receivePacket.getAddress().toString()));
 				Thread.sleep(500);
@@ -283,6 +288,10 @@ public class Servers {
 	
 	public String hibernate(int serverID) {
 		return doSend("hibernate", getServer(serverID));
+	}
+	
+	public String reboot(int serverID) {
+		return doSend("reboot", getServer(serverID));
 	}
 	
 	public String getCompsOnline() {
