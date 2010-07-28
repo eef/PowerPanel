@@ -6,5 +6,7 @@
     <string name="cancel_shutdown">Cancel shutdown: Are you sure?</string>
     <string name="ok">Ok</string>
     <string name="shutdown">Shutdown Computer: Are you sure?</string>
-    <string name="ponline">#00ff00</string>
+    <string name="hibernate">Hibernate Computer: Are you sure?</string>
+    <color name="tvbg">#7f7f7f</color>
+    <color name="white">#ffffff</color>
 </resources>
