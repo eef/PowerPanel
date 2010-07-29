@@ -52,33 +52,35 @@ class  Handler(object):
         return "%d secs" % (seconds)
     return "%02d hours %02d mins %02d secs" % (hours, minutes, seconds)
     
-  def handle_shutdown(self, options={"delay":"3000"}):
+  def handle_shutdown(self, options={"delay":"180"}):
     shutdown_string = "shutdown /s /t %s" % options['delay']
     os.system(shutdown_string)
     res = "Computer will shutdown in %s " % self.format_secs(int(options['delay']))
     return res
         
-  def handle_cancel(self):
+  def handle_cancel(self, options={"delay":"180"}):
     os.system("shutdown /a")
     res = "Shutdown cancelled"
     return res
         
-  def handle_reboot(self):
+  def handle_reboot(self, options={"delay":"180"}):
     os.system("shutdown /r")
+    res = "Rebooting"
+    return res
         
   def handle_info(self):
     return "panima"
 
-  def handle_hibernate(self):
+  def handle_hibernate(self, options={"delay":"180"}):
     os.system("shutdown /h")
     res = "Computer hibernating"
     return res
 
-  def handle_hello(self):
+  def handle_hello(self, options={"delay":"180"}):
     res = self.get_pkey()
     return res
         
-  def handle_pair(self):
+  def handle_pair(self, options={"delay":"180"}):
     pair = "no"
     dlg = wx.MessageDialog(None, "Do you want to pair?", "Confirm Pair", wx.OK|wx.CANCEL|wx.ICON_QUESTION)
     result = dlg.ShowModal()
@@ -92,16 +94,19 @@ class  Handler(object):
         
 
     
-  def handle(self, type, * args, ** kwargs):
+  def handle(self, type, options):
     func = getattr(self, 'handle_%s' % type, None)
     if func is None:
       return False
-    return func(*args, ** kwargs)
+    return func(options)
 
 class MyProtocol(DatagramProtocol):
   def datagramReceived(self, data, (host, port)):
     handler = Handler()
-    res = handler.handle(data)
+    print "Data: " + data
+    data_split = data.split(":")
+    print data_split
+    res = handler.handle(data_split[0], options={'delay':data_split[1]})
     self.transport.write(res, (host, port))
 
 
@@ -114,9 +119,9 @@ class MyFrame(Frame):
     self.CreateStatusBar()
     file_menu = Menu()
     help_menu = Menu()
-    file_menu.Append(ID_EXIT, "E&xit", "Exit Power Panel")
-    file_menu.Append(ID_CFG, "C&onfig", "Configure Power Panel")
-    help_menu.Append(ID_ABOUT, "A&bout", "About Power Panel")
+    file_menu.Append(ID_EXIT, "E&xit", "Exit PowerPanel")
+    file_menu.Append(ID_CFG, "C&onfig", "Configure PowerPanel")
+    help_menu.Append(ID_ABOUT, "A&bout", "About PowerPanel")
     menuBar = MenuBar()
     menuBar.Append(file_menu, "&File")
     menuBar.Append(help_menu, "&Help")
@@ -175,14 +180,12 @@ class MyFrame(Frame):
     
   def OnAboutBox(self, event):
     description = """Power Panel is a remote shutdown application for Android based phones."""
-    licence = """Fuck yer license."""
     info = wx.AboutDialogInfo()
     info.SetName('Power Panel')
     info.SetVersion('1.0')
     info.SetDescription(description)
     info.SetCopyright('(C) 2010 WellBaked')
     info.SetWebSite('http://www.wellbaked.net')
-    info.SetLicence(licence)
     info.AddDeveloper('Will McGregor / Arthur Canal')
     info.AddDocWriter('Will McGregor / Arthur Canal')
     info.AddArtist('WellBaked')
