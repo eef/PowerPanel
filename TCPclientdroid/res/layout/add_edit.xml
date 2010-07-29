@@ -8,36 +8,69 @@
 			android:orientation="horizontal"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			>
-		<TextView
-				android:text="Display Name:"
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:layout_alignParentLeft="true"
-				/>
+			android:gravity="center_vertical">
+			
+		<Button 
+			android:id="@+id/minus_hour_button"
+			android:text="-"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+				
 		<EditText
-				android:id="@+id/name"
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content" 
-				android:layout_alignParentRight="true"
-				/>
+			android:text="0"
+			android:id="@+id/hour_label"
+			android:numeric="integer"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:padding="10px"
+			android:layout_gravity="center_vertical"
+			android:textSize="34px"
+			/>
+		
+		<Button android:id="@+id/add_hour_button" android:text="+" android:layout_width="wrap_content" android:layout_height="fill_parent"/>
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:textSize="24px"
+			android:text="Hours"
+			android:layout_marginLeft="10px"/>
 	</LinearLayout>
+	
 	<LinearLayout
 			android:orientation="horizontal"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			>
-		<TextView
-				android:text="Last IP:"
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:layout_alignParentLeft="true"
-				/>
+			android:gravity="center_vertical">
+		<Button
+			android:id="@+id/minus_min_button"
+			android:text="-"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+		
 		<EditText
-				android:id="@+id/last_ip"
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content" 
-				android:layout_alignParentRight="true"
-				/>
+			android:text="0"
+			android:id="@+id/min_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:numeric="integer"
+			android:padding="10px"
+			android:layout_gravity="center_vertical"
+			android:textSize="34px" />
+		<Button
+			android:id="@+id/add_min_button"
+			android:text="+"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:textSize="24px"
+			android:layout_marginLeft="10px" 
+			android:text="Mins"/>
 	</LinearLayout>
+
 </LinearLayout>

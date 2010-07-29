@@ -2,12 +2,14 @@
 <resources>
 	<string name="app_name">Power Panel</string>
 	<string name="hello">Shutdown</string>
+	<string name="add_title">Shutdown</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_shutdown">Cancel shutdown: Are you sure?</string>
     <string name="ok">Ok</string>
     <string name="shutdown">Shutdown Computer: Are you sure?</string>
     <string name="hibernate">Hibernate Computer: Are you sure?</string>
     <string name="reboot">Reboot Computer: Are you sure?</string>
-    <color name="tvbg">#7f7f7f</color>
+    <color name="tvbg">#d4d4d4</color>
     <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
 </resources>
