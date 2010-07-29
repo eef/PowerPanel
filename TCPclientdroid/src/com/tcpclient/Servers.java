@@ -219,7 +219,7 @@ public class Servers {
 			DatagramSocket clientSocket = new DatagramSocket();
 			byte[] sendData = new byte[1024];
 			byte[] receiveData = new byte[1024];
-			sendData = "hello".getBytes();
+			sendData = "hello:0".getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, dest, 2501);
 			clientSocket.send(sendPacket);
@@ -258,7 +258,7 @@ public class Servers {
 				Log.d(tag, "paired");
 				paired = true;
 			} else {
-				String reply = doSend("pair", server);
+				String reply = doSend("pair:0", server);
 				JSONObject object = (JSONObject) new JSONTokener(reply)
 						.nextValue();
 				if (object.getString("pairaccepted").equals("yes")) {
@@ -282,16 +282,16 @@ public class Servers {
 		}
 	}
 
-	public String shutdown(int serverID) {
-		return doSend("shutdown", getServer(serverID));
+	public String shutdown(int serverID, String seconds) {
+		return doSend("shutdown:" + seconds, getServer(serverID));
 	}
 	
 	public String hibernate(int serverID) {
-		return doSend("hibernate", getServer(serverID));
+		return doSend("hibernate:0", getServer(serverID));
 	}
 	
 	public String reboot(int serverID) {
-		return doSend("reboot", getServer(serverID));
+		return doSend("reboot:0", getServer(serverID));
 	}
 	
 	public String getCompsOnline() {
@@ -299,7 +299,7 @@ public class Servers {
 	}
 
 	public String cancelShutdown(int serverID) {
-		return doSend("cancel", getServer(serverID));
+		return doSend("cancel:0", getServer(serverID));
 	}
 
 	private Server getServer(int serverID) {
