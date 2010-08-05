@@ -103,11 +103,11 @@ public class Servers {
 		Log.d("####3 server ID:",Integer.toString(serverID));
 		final int WOLPORT = 9;    
 		Server wolserver = getServer(serverID);
-		        String ipStr = wolserver.getServerIP().toString();
+		        //String ipStr = wolserver.getServerIP().toString();
 		        String macStr = wolserver.getMAC();
-		        Log.d("####4 server ID:",macStr);
+		        
 		        try {
-		        	Log.d("not in server list",macStr);
+		        	
 		            byte[] macBytes = getMacBytes(macStr);
 		            byte[] bytes = new byte[6 + 16 * macBytes.length];
 		            for (int i = 0; i < 6; i++) {
@@ -116,15 +116,17 @@ public class Servers {
 		            for (int i = 6; i < bytes.length; i += macBytes.length) {
 		                System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
 		            }
-		            
-		            InetAddress address = InetAddress.getByName(ipStr);
-		            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
+		            Log.d("####PORT",Integer.toString(WOLPORT));
+		            InetAddress address = wolserver.getServerIP();
+		            Log.d("####IP",wolserver.getServerIP().toString());
+		            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, WOLPORT);
 		            DatagramSocket socket = new DatagramSocket();
 		            socket.send(packet);
 		            socket.close();
 		            return "success";		            
 		        }
 		        catch (Exception e) {
+		        	Log.d("####","failed");
 		        	return "failed";
 		        }
 	}

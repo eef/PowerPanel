@@ -9,17 +9,14 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textSize="35sp"
-		android:text="server name"
-	/>
-	
-	<ImageView
-		android:id="@+id/icon"
-		android:layout_width="50px"
-		android:paddingLeft="2px"
-		android:paddingRight="2px"
-		android:paddingTop="2px"
-		android:layout_height="50px"
-		android:layout_gravity="center_vertical"
-		android:src="@drawable/ok"
-	/>
+		android:text="Computer Name"
+	android:layout_marginLeft="10px"/>
+	<TextView
+		android:id="@+id/status_label"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textSize="15sp"
+		android:text="Status"
+		android:textColor="@color/status_colour"
+	android:layout_marginLeft="10px"/>
 </LinearLayout>
