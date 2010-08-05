@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,13 +48,16 @@ public class TCPclient extends ListActivity {
 	private String status;
 	public TextView hour_label;
 	public TextView mins_label;
+	public TextView status_label;
 	public String shutdownSecs;
+	public Integer test = 0;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		setContentView(R.layout.main);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		new Construct().execute();
 	}
 
@@ -62,7 +66,7 @@ public class TCPclient extends ListActivity {
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
 	}
-
+	
 	public void onListItemClick(ListView parent, View v, int position, long id) {
 		String item = complist.get(position);
 		try {
@@ -91,10 +95,8 @@ public class TCPclient extends ListActivity {
 				.setAlphabeticShortcut('b');
 		menu.add(Menu.NONE, REBOOT_ID, Menu.NONE, "Reboot")
 				.setAlphabeticShortcut('c');
-		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
-				.setAlphabeticShortcut('d');
-		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair").setAlphabeticShortcut(
-				'e');
+			menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel Shutdown")
+			.setAlphabeticShortcut('d');
 	}
 
 	@Override
@@ -352,6 +354,7 @@ public class TCPclient extends ListActivity {
 			LayoutInflater inflater = getLayoutInflater();
 			View row = inflater.inflate(R.layout.row, null);
 			TextView label = (TextView) row.findViewById(R.id.label);
+			TextView status_label = (TextView) row.findViewById(R.id.status_label);
 			String item = complist.get(position);
 
 			try {
@@ -359,13 +362,19 @@ public class TCPclient extends ListActivity {
 						.nextValue();
 				Log.d("SHOW NAME", object.getString("name"));
 				label.setText(object.getString("name"));
-				ImageView icon = (ImageView) row.findViewById(R.id.icon);
+				//ImageView icon = (ImageView) row.findViewById(R.id.icon);
 				if (object.getString("status").equals("ponline")) {
-					icon.setImageResource(R.drawable.ponline);
+					row.setBackgroundResource(R.color.ponline);
+					//icon.setImageResource(R.drawable.ponline);
+					status_label.setText("Paired");
 				} else if (object.getString("status").equals("offline")) {
-					icon.setImageResource(R.drawable.offline);
+					//icon.setImageResource(R.drawable.offline);
+					row.setBackgroundResource(R.color.offline);
+					status_label.setText("Offline");
 				} else if (object.getString("status").equals("online")) {
-					icon.setImageResource(R.drawable.online);
+					//icon.setImageResource(R.drawable.online);
+					row.setBackgroundResource(R.color.online);
+					status_label.setText("Not paired");
 				}
 			} catch (JSONException e) {
 				makeToast(e.getMessage(), true);
@@ -384,7 +393,7 @@ public class TCPclient extends ListActivity {
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, REFRESH_ID, 0, "Refresh").setIcon(R.drawable.refresh);
-		//menu.add(0, CLEARDB_ID, 0, "Clear Database").setIcon(R.drawable.refresh);
+		menu.add(0, CLEARDB_ID, 0, "Clear Database").setIcon(R.drawable.refresh);
 		return true;
 	}
 
