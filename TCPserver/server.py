@@ -81,6 +81,7 @@ class  Handler(object):
     return res
         
   def handle_pair(self, options={"delay":"180"}):
+    print "handling pair...";
     pair = "no"
     dlg = wx.MessageDialog(None, "Do you want to pair?", "Confirm Pair", wx.OK|wx.CANCEL|wx.ICON_QUESTION)
     result = dlg.ShowModal()
@@ -95,13 +96,16 @@ class  Handler(object):
 
     
   def handle(self, type, options):
+    print "handling something..."
     func = getattr(self, 'handle_%s' % type, None)
     if func is None:
+
       return False
     return func(options)
 
 class MyProtocol(DatagramProtocol):
   def datagramReceived(self, data, (host, port)):
+    print "Packet recived"
     handler = Handler()
     print "Data: " + data
     data_split = data.split(":")

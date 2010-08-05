@@ -41,6 +41,7 @@ public class TCPclient extends ListActivity {
 	private static final int CANCEL_ID = Menu.FIRST + 5;
 	private static final int HIBERNATE_ID = Menu.FIRST + 6;
 	private static final int REBOOT_ID = Menu.FIRST + 7;
+	private static final int WAKE_ID = Menu.FIRST + 8;
 	private int id = 0;
 	Servers serversobject;
 	Context thisContext = this;
@@ -95,6 +96,8 @@ public class TCPclient extends ListActivity {
 				.setAlphabeticShortcut('d');
 		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair").setAlphabeticShortcut(
 				'e');
+		menu.add(Menu.NONE, WAKE_ID, Menu.NONE, "Wake on Lan").setAlphabeticShortcut(
+		'e');
 	}
 
 	@Override
@@ -117,10 +120,44 @@ public class TCPclient extends ListActivity {
 		case CANCEL_ID:
 			cancel(info.position);
 			break;
+		case WAKE_ID:
+			wake(info.position);
+			break;
+
 		}
 		return (super.onOptionsItemSelected(item));
 	}
-	
+
+	private void wake(int comp) {
+		// TODO Auto-generated method stub
+		String item = complist.get(comp);
+		
+		try {
+			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
+			id = object.getInt("id");
+		} catch (JSONException e) {
+			Log.e(tag, e.getMessage());
+		}
+		if (id >= 0) {
+			new AlertDialog.Builder(this).setTitle(R.string.wake_up)
+					.setPositiveButton(R.string.ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+										Log.d("#################################",Integer.toString(id));
+									processWakeUP(id);
+								}
+							}).setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+								}
+							}).show();
+		}
+
+	}
+
+
 	private void clearDatabase() {
 		DataHelper database = new DataHelper(this);
 		database.deleteAll();
@@ -137,95 +174,97 @@ public class TCPclient extends ListActivity {
 		makeToast("Pairing...", false);
 		new Pair().execute();
 	}
-	
+
 	private void shutdown(int idd) {
 		id = idd;
-		LayoutInflater inflater=LayoutInflater.from(this);
-		View addView=inflater.inflate(R.layout.add_edit, null);
-		final DialogWrapper wrapper=new DialogWrapper(addView);
-		new AlertDialog.Builder(this)
-			.setTitle(R.string.add_title)
-			.setView(addView)
-			.setPositiveButton(R.string.ok,
-													new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog,
-															int whichButton) {
-					processShutdown(id, wrapper);
-				}
-			})
-			.setNegativeButton(R.string.cancel,
-													new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog,
-															int whichButton) {
-					// ignore, just dismiss
-				}
-			})
-			.show();
+		LayoutInflater inflater = LayoutInflater.from(this);
+		View addView = inflater.inflate(R.layout.add_edit, null);
+		final DialogWrapper wrapper = new DialogWrapper(addView);
+		new AlertDialog.Builder(this).setTitle(R.string.add_title).setView(
+				addView).setPositiveButton(R.string.ok,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						processShutdown(id, wrapper);
+					}
+				}).setNegativeButton(R.string.cancel,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// ignore, just dismiss
+					}
+				}).show();
 	}
-	
+
 	class DialogWrapper {
-		View base=null;
-		
+		View base = null;
+
 		DialogWrapper(View base) {
-			this.base=base;
-			hour_label = (TextView)this.base.findViewById(R.id.hour_label);
-			Button add_hour_button =(Button)this.base.findViewById(R.id.add_hour_button);
+			this.base = base;
+			hour_label = (TextView) this.base.findViewById(R.id.hour_label);
+			Button add_hour_button = (Button) this.base
+					.findViewById(R.id.add_hour_button);
 			add_hour_button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					Integer hour_value = Integer.parseInt(hour_label.getText().toString());
+					Integer hour_value = Integer.parseInt(hour_label.getText()
+							.toString());
 					hour_value++;
 					hour_label.setText(Integer.toString(hour_value));
 				}
 			});
-			Button minus_hour_button =(Button)this.base.findViewById(R.id.minus_hour_button);
+			Button minus_hour_button = (Button) this.base
+					.findViewById(R.id.minus_hour_button);
 			minus_hour_button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					Integer hour_value = Integer.parseInt(hour_label.getText().toString());
-					if(hour_value != 0) {
+					Integer hour_value = Integer.parseInt(hour_label.getText()
+							.toString());
+					if (hour_value != 0) {
 						hour_value--;
 						hour_label.setText(Integer.toString(hour_value));
 					}
 				}
 			});
-			
-			mins_label = (TextView)this.base.findViewById(R.id.min_label);
-			Button add_min_button =(Button)this.base.findViewById(R.id.add_min_button);
+
+			mins_label = (TextView) this.base.findViewById(R.id.min_label);
+			Button add_min_button = (Button) this.base
+					.findViewById(R.id.add_min_button);
 			add_min_button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					Integer min_value = Integer.parseInt(mins_label.getText().toString());
+					Integer min_value = Integer.parseInt(mins_label.getText()
+							.toString());
 					min_value++;
 					mins_label.setText(Integer.toString(min_value));
 				}
 			});
-			Button minus_min_button =(Button)this.base.findViewById(R.id.minus_min_button);
+			Button minus_min_button = (Button) this.base
+					.findViewById(R.id.minus_min_button);
 			minus_min_button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					Integer min_value = Integer.parseInt(mins_label.getText().toString());
-					if(min_value != 0) {
+					Integer min_value = Integer.parseInt(mins_label.getText()
+							.toString());
+					if (min_value != 0) {
 						min_value--;
 						mins_label.setText(Integer.toString(min_value));
 					}
 				}
 			});
 		}
-		
+
 		int getMins() {
 			return Integer.parseInt(mins_label.getText().toString());
 		}
-		
+
 		int getHours() {
 			return Integer.parseInt(hour_label.getText().toString());
 		}
-		
+
 		public String getSeconds() {
 			int mins = this.getMins();
 			int hours = this.getHours();
 			int hoursInMins = 0;
 			int totalSeconds = 0;
-			if(hours > 0) {
+			if (hours > 0) {
 				hoursInMins = hours * 60;
 			}
-			if(mins > 0 || hoursInMins > 0) {
+			if (mins > 0 || hoursInMins > 0) {
 				totalSeconds = (mins + hoursInMins) * 60;
 			}
 			return Integer.toString(totalSeconds);
@@ -238,7 +277,7 @@ public class TCPclient extends ListActivity {
 		makeToast("Shutting down..", false);
 		new Shutdown().execute();
 	}
-	
+
 	private void processReboot(int idd) {
 		id = idd;
 		makeToast("Rebooting..", false);
@@ -256,7 +295,13 @@ public class TCPclient extends ListActivity {
 		makeToast("Cancelling shutdown", false);
 		new CancelShutdown().execute();
 	}
-	
+
+	private void processWakeUP(int idd) {
+		id = idd;
+		makeToast("Sending WOL packet", false);
+		new SendWOL().execute();
+	}
+
 	private void reboot(int comp) {
 		String item = complist.get(comp);
 		try {
@@ -384,7 +429,8 @@ public class TCPclient extends ListActivity {
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, REFRESH_ID, 0, "Refresh").setIcon(R.drawable.refresh);
-		//menu.add(0, CLEARDB_ID, 0, "Clear Database").setIcon(R.drawable.refresh);
+		// menu.add(0, CLEARDB_ID, 0,
+		// "Clear Database").setIcon(R.drawable.refresh);
 		return true;
 	}
 
@@ -499,11 +545,10 @@ public class TCPclient extends ListActivity {
 		@Override
 		protected void onPostExecute(Void unused) {
 			refreshList();
-			Toast.makeText(thisContext, status,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
 	}
-	
+
 	class Reboot extends AsyncTask<Void, Integer, Void> {
 
 		protected Void doInBackground(Void... unused) {
@@ -519,8 +564,7 @@ public class TCPclient extends ListActivity {
 		@Override
 		protected void onPostExecute(Void unused) {
 			refreshList();
-			Toast.makeText(thisContext, status,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -539,11 +583,30 @@ public class TCPclient extends ListActivity {
 		@Override
 		protected void onPostExecute(Void unused) {
 			refreshList();
-			Toast.makeText(thisContext, status,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
 	}
 
+	class SendWOL extends AsyncTask<Void, Integer, Void> {
+		protected Void doInBackground(Void... unused) {
+			Log.d("################2","asdasd");
+			status = serversobject.wakeUp(id);		
+			return (null);
+		}
+
+		protected void onProgressUpdate(Void... unused) {
+			Toast.makeText(thisContext, "Still working...", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onPostExecute(Void unused) {
+			refreshList();
+			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	
 	class CancelShutdown extends AsyncTask<Void, Integer, Void> {
 
 		protected Void doInBackground(Void... unused) {
@@ -559,8 +622,7 @@ public class TCPclient extends ListActivity {
 		@Override
 		protected void onPostExecute(Void unused) {
 			refreshList();
-			Toast.makeText(thisContext, status,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
 	}
 

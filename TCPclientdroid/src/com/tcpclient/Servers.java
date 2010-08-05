@@ -99,13 +99,15 @@ public class Servers {
 		}
 	}
 
-	public boolean wakeUp(int serverID){
+	public String wakeUp(int serverID){
+		Log.d("####3 server ID:",Integer.toString(serverID));
 		final int WOLPORT = 9;    
 		Server wolserver = getServer(serverID);
 		        String ipStr = wolserver.getServerIP().toString();
 		        String macStr = wolserver.getMAC();
-		        
+		        Log.d("####4 server ID:",macStr);
 		        try {
+		        	Log.d("not in server list",macStr);
 		            byte[] macBytes = getMacBytes(macStr);
 		            byte[] bytes = new byte[6 + 16 * macBytes.length];
 		            for (int i = 0; i < 6; i++) {
@@ -120,10 +122,10 @@ public class Servers {
 		            DatagramSocket socket = new DatagramSocket();
 		            socket.send(packet);
 		            socket.close();
-		            return true;		            
+		            return "success";		            
 		        }
 		        catch (Exception e) {
-		        	return false;
+		        	return "failed";
 		        }
 	}
 
@@ -211,6 +213,7 @@ public class Servers {
 	public void discover() throws Exception {
 		serverList.clear();
 		InetAddress dest = InetAddress.getByName(broadcastIP.getHostAddress());
+		//InetAddress dest = InetAddress.getByName("192.168.0.255");
 		if (broadcastIP == null) {
 			Log.e(tag, "shit the bed...no broadcast");
 		}

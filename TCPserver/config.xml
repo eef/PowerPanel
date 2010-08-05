@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="windows-1252"?>
-<config saved="0">
-  <salt></salt>
+<config saved="1">
+  <salt>1234</salt>
 </config>
   
