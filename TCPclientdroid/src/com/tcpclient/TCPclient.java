@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -67,17 +68,75 @@ public class TCPclient extends ListActivity {
 		setListAdapter(new IconicAdapter());
 		registerForContextMenu(getListView());
 	}
-	
-	public void onListItemClick(ListView parent, View v, int position, long id) {
+
+	public void onListItemClick(ListView parent, View v, final int position,
+			long id) {
 		String item = complist.get(position);
-		try {
-			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
-			makeToast("Pairing: " + object.getString("name"), false);
-			pairReq(position);
-		} catch (JSONException e) {
-			Log.e(tag, "failed to serialize select item");
+		final Server current_server = serversobject.getServer(position);
+		final ActionItem qa_pair = new ActionItem();
+		final ActionItem qa_shutdown = new ActionItem();
+		final ActionItem qa_cancel_shutdown = new ActionItem();
+		final ActionItem qa_restart = new ActionItem();
+		final ActionItem qa_hibernate = new ActionItem();
+		final ActionItem qa_wol = new ActionItem();
+		final QuickAction qa = new QuickAction(v);
+
+		if (!current_server.isPaired()) {
+			qa_pair.setTitle("Pair");
+			qa_pair.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					pairReq(position);
+					qa.dismiss();
+				}
+			});
+			qa.addActionItem(qa_pair);
 		}
 
+		if (current_server.isPaired()) {
+			if (!current_server.getIsShuttingDown()) {
+				qa_shutdown.setTitle("Shutdown");
+				qa_shutdown.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						shutdown(position);
+						current_server.setIsShuttingDown(true);
+						qa.dismiss();
+					}
+				});
+				qa.addActionItem(qa_shutdown);
+			}
+
+			if (current_server.getIsShuttingDown()) {
+				qa_cancel_shutdown.setTitle("Cancel shutdown");
+				qa_cancel_shutdown.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						cancel(position);
+						current_server.setIsShuttingDown(false);
+						qa.dismiss();
+					}
+				});
+				qa.addActionItem(qa_cancel_shutdown);
+			}
+			qa_restart.setTitle("Reboot");
+			qa_restart.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					reboot(position);
+					qa.dismiss();
+				}
+			});
+			qa.addActionItem(qa_restart);
+			
+			qa_hibernate.setTitle("Hibernate");
+			qa_hibernate.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					hibernate(position);
+					qa.dismiss();
+				}
+			});
+			qa.addActionItem(qa_hibernate);
+		}
+
+		qa.setAnimStyle(QuickAction.ANIM_AUTO);
+		qa.show();
 	}
 
 	private void refreshList() {
@@ -87,58 +146,10 @@ public class TCPclient extends ListActivity {
 		registerForContextMenu(getListView());
 	}
 
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenu.ContextMenuInfo menuInfo) {
-		menu.add(Menu.NONE, SHUTDOWN_ID, Menu.NONE, "Shutdown")
-				.setAlphabeticShortcut('a');
-		menu.add(Menu.NONE, HIBERNATE_ID, Menu.NONE, "Hibernate")
-				.setAlphabeticShortcut('b');
-		menu.add(Menu.NONE, REBOOT_ID, Menu.NONE, "Reboot")
-				.setAlphabeticShortcut('c');
-		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel")
-				.setAlphabeticShortcut('d');
-		menu.add(Menu.NONE, PAIR_ID, Menu.NONE, "Pair")
-				.setAlphabeticShortcut('e');
-		menu.add(Menu.NONE, WAKE_ID, Menu.NONE, "Wake on Lan")
-				.setAlphabeticShortcut('e');
-		menu.add(Menu.NONE, CANCEL_ID, Menu.NONE, "Cancel Shutdown")
-				.setAlphabeticShortcut('d');
-
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
-				.getMenuInfo();
-		switch (item.getItemId()) {
-		case PAIR_ID:
-			pairReq(info.position);
-			break;
-		case SHUTDOWN_ID:
-			shutdown(info.position);
-			break;
-		case HIBERNATE_ID:
-			hibernate(info.position);
-			break;
-		case REBOOT_ID:
-			reboot(info.position);
-			break;
-		case CANCEL_ID:
-			cancel(info.position);
-			break;
-		case WAKE_ID:
-			wake(info.position);
-			break;
-
-		}
-		return (super.onOptionsItemSelected(item));
-	}
-
 	private void wake(int comp) {
 		// TODO Auto-generated method stub
 		String item = complist.get(comp);
-		
+
 		try {
 			JSONObject object = (JSONObject) new JSONTokener(item).nextValue();
 			id = object.getInt("id");
@@ -151,7 +162,8 @@ public class TCPclient extends ListActivity {
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
-										Log.d("#################################",Integer.toString(id));
+									Log.d("#################################",
+											Integer.toString(id));
 									processWakeUP(id);
 								}
 							}).setNegativeButton(R.string.cancel,
@@ -163,7 +175,6 @@ public class TCPclient extends ListActivity {
 		}
 
 	}
-
 
 	private void clearDatabase() {
 		DataHelper database = new DataHelper(this);
@@ -404,7 +415,8 @@ public class TCPclient extends ListActivity {
 			LayoutInflater inflater = getLayoutInflater();
 			View row = inflater.inflate(R.layout.row, null);
 			TextView label = (TextView) row.findViewById(R.id.label);
-			TextView status_label = (TextView) row.findViewById(R.id.status_label);
+			TextView status_label = (TextView) row
+					.findViewById(R.id.status_label);
 			String item = complist.get(position);
 
 			try {
@@ -412,17 +424,17 @@ public class TCPclient extends ListActivity {
 						.nextValue();
 				Log.d("SHOW NAME", object.getString("name"));
 				label.setText(object.getString("name"));
-				//ImageView icon = (ImageView) row.findViewById(R.id.icon);
+				// ImageView icon = (ImageView) row.findViewById(R.id.icon);
 				if (object.getString("status").equals("ponline")) {
 					row.setBackgroundResource(R.color.ponline);
-					//icon.setImageResource(R.drawable.ponline);
+					// icon.setImageResource(R.drawable.ponline);
 					status_label.setText("Paired");
 				} else if (object.getString("status").equals("offline")) {
-					//icon.setImageResource(R.drawable.offline);
+					// icon.setImageResource(R.drawable.offline);
 					row.setBackgroundResource(R.color.offline);
 					status_label.setText("Offline");
 				} else if (object.getString("status").equals("online")) {
-					//icon.setImageResource(R.drawable.online);
+					// icon.setImageResource(R.drawable.online);
 					row.setBackgroundResource(R.color.online);
 					status_label.setText("Not paired");
 				}
@@ -447,7 +459,8 @@ public class TCPclient extends ListActivity {
 		// menu.add(0, CLEARDB_ID, 0,
 		// "Clear Database").setIcon(R.drawable.refresh);
 
-		menu.add(0, CLEARDB_ID, 0, "Clear Database").setIcon(R.drawable.refresh);
+		menu.add(0, CLEARDB_ID, 0, "Clear Database")
+				.setIcon(R.drawable.refresh);
 
 		return true;
 	}
@@ -607,8 +620,8 @@ public class TCPclient extends ListActivity {
 
 	class SendWOL extends AsyncTask<Void, Integer, Void> {
 		protected Void doInBackground(Void... unused) {
-			Log.d("################2","asdasd");
-			status = serversobject.wakeUp(id);		
+			Log.d("################2", "asdasd");
+			status = serversobject.wakeUp(id);
 			return (null);
 		}
 
@@ -623,8 +636,7 @@ public class TCPclient extends ListActivity {
 			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
 	}
-	
-	
+
 	class CancelShutdown extends AsyncTask<Void, Integer, Void> {
 
 		protected Void doInBackground(Void... unused) {

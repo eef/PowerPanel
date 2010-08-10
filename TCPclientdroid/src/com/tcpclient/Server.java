@@ -16,6 +16,7 @@ public class Server {
 	private int serverID = -1;
 	String pKey, mac, hostname, name = null;
 	String status = "online";
+	boolean isShuttingDown = false;
 	InetAddress serverIP = null;
 	
 
@@ -78,9 +79,22 @@ public class Server {
 		this.mac = string; 		
 	}
 	
+	public void setIsShuttingDown(boolean confirm) {
+		if (confirm) {
+			this.isShuttingDown = true;
+		} else if(!confirm) {
+			this.isShuttingDown = false;
+		}		
+	}
+	
 	public String getMAC() {
 		return this.mac; 		
 	}
+	
+	public boolean getIsShuttingDown() {
+		return this.isShuttingDown; 		
+	}
+	
 	public void setPKey(String string) {
 		this.pKey = string; 			
 	}

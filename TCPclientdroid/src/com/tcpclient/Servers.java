@@ -307,7 +307,7 @@ public class Servers {
 		return doSend("cancel:0", getServer(serverID));
 	}
 
-	private Server getServer(int serverID) {
+	public Server getServer(int serverID) {
 		Iterator<Server> servers = displayList.iterator();
 		if (servers.hasNext()) {
 			Log.d(tag, "getServer has next");
