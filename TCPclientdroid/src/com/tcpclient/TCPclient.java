@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -53,13 +54,23 @@ public class TCPclient extends ListActivity {
 	public TextView status_label;
 	public String shutdownSecs;
 	public Integer test = 0;
+	Button btn1;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		Log.d(tag, "created server object");
 		super.onCreate(icicle);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		btn1 = (Button) this.findViewById(R.id.Button01);
+		btn1.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				makeToast("Refreshing servers...", false);
+				new RefreshList().execute();
+			}
+		});
+		makeToast("Dicovering servers...", true);
 		new Construct().execute();
 	}
 
@@ -124,7 +135,7 @@ public class TCPclient extends ListActivity {
 				}
 			});
 			qa.addActionItem(qa_restart);
-			
+
 			qa_hibernate.setTitle("Hibernate");
 			qa_hibernate.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {

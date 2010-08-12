@@ -5,10 +5,24 @@
 	android:layout_width="fill_parent" 
 	android:layout_height="fill_parent"
 	android:id="@+id/main" >
+	<TableLayout
+		android:id="@+id/TableLayout01"
+		android:layout_width="fill_parent"
+		android:layout_height="80px"
+		android:background="@drawable/title_background"
+		android:stretchColumns="1" android:layout_gravity="center_vertical">
+		 <TableRow>
+        <TextView android:layout_marginLeft="10px" android:textSize="33px" android:layout_marginTop="20px" android:text="Power" android:textColor="@color/white"/>
+        <TextView android:gravity="left" android:textSize="33px" android:layout_marginTop="20px" android:text="Panel" android:textColor="@color/right_colour"/>
+            <TextView android:textSize="28px" />
+    
+<Button android:id="@+id/Button01" android:background="@drawable/icon" android:layout_height="50px" android:layout_width="50px" android:layout_marginTop="15px" android:layout_marginRight="15px"></Button>
+</TableRow>
+</TableLayout>
 	<ListView
 		android:id="@android:id/list"
 		android:layout_width="fill_parent" 
 		android:layout_height="fill_parent"
-		android:drawSelectorOnTop="false"
-		/>
+		android:drawSelectorOnTop="false">
+</ListView>
 </LinearLayout>

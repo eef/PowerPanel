@@ -17,4 +17,6 @@
     <color name="offline">#330000</color>
     <color name="online">#402800</color>
     <color name="status_colour">#616161</color>
+    <color name="right_colour">#dc3522</color>
+    
 </resources>
