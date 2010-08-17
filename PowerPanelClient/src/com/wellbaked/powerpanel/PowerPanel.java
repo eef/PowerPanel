@@ -6,9 +6,6 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
-import com.wellbaked.powerpanel.R;
-
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
@@ -40,13 +37,7 @@ public class PowerPanel extends ListActivity {
 	private List<String> complist = new ArrayList<String>();
 	public static final int REFRESH_ID = Menu.FIRST + 1;
 	public static final int CLEARDB_ID = Menu.FIRST + 2;
-
-	private static final int PAIR_ID = Menu.FIRST + 3;
-	private static final int SHUTDOWN_ID = Menu.FIRST + 4;
-	private static final int CANCEL_ID = Menu.FIRST + 5;
-	private static final int HIBERNATE_ID = Menu.FIRST + 6;
-	private static final int REBOOT_ID = Menu.FIRST + 7;
-	private static final int WAKE_ID = Menu.FIRST + 8;
+	
 	private int id = 0;
 	Servers serversobject;
 	Context thisContext = this;
