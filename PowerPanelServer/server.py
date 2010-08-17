@@ -18,6 +18,7 @@ ID_ABOUT = 105
 ID_EXIT_CONFIG  = 106
 ID_SAVE_CONFIG  = 107
 ID_SALT  = 108
+ID_ICON_TIMER = wx.NewId()
 
 class  Handler(object):
 
@@ -121,6 +122,12 @@ class MyFrame(Frame):
     self.settings.get_salt()
     self.SetSizeHints(180,160,180,160)
     self.CreateStatusBar()
+    self.tbicon = wx.TaskBarIcon()
+    self.icon_state = False
+    icon = wx.Icon('icon.png', wx.BITMAP_TYPE_PNG)
+    self.tbicon.SetIcon(icon, '')
+    wx.EVT_TASKBAR_LEFT_DCLICK(self.tbicon, self.OnTaskBarLeftDClick)
+    wx.EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarRightClick)
     file_menu = Menu()
     help_menu = Menu()
     file_menu.Append(ID_EXIT, "E&xit", "Exit PowerPanel")
@@ -195,6 +202,22 @@ class MyFrame(Frame):
     info.AddArtist('WellBaked')
     info.AddTranslator('Will McGregor / Arthur Canal')
     wx.AboutBox(info)
+
+  def OnTaskBarLeftDClick(self, evt):
+        self.Show()
+
+  def ServerIsRunning(self, state):
+      if state == True:
+          icon = wx.Icon('not_running.pmg', wx.BITMAP_TYPE_PNG)
+          self.tbicon.SetIcon(icon, 'Not Running')
+      else:
+          icon = wx.Icon('running.png', wx.BITMAP_TYPE_PNG)
+          self.tbicon.SetIcon(icon, 'Running')
+
+  def OnTaskBarRightClick(self, evt):
+      #right clicking icon should pop up the main window
+      self.Hide()
+      wx.GetApp().ProcessIdle()
 
 
 
