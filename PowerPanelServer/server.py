@@ -124,7 +124,7 @@ class MyFrame(Frame):
     self.CreateStatusBar()
     self.tbicon = wx.TaskBarIcon()
     self.icon_state = False
-    icon = wx.Icon('icon.png', wx.BITMAP_TYPE_PNG)
+    icon = wx.Icon('icons.ico', wx.BITMAP_TYPE_ICO)
     self.tbicon.SetIcon(icon, '')
     wx.EVT_TASKBAR_LEFT_UP(self.tbicon, self.OnTaskBarLeftDClick)
     wx.EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarRightClick)
