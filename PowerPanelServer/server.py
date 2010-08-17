@@ -126,7 +126,7 @@ class MyFrame(Frame):
     self.icon_state = False
     icon = wx.Icon('icon.png', wx.BITMAP_TYPE_PNG)
     self.tbicon.SetIcon(icon, '')
-    wx.EVT_TASKBAR_LEFT_DCLICK(self.tbicon, self.OnTaskBarLeftDClick)
+    wx.EVT_TASKBAR_LEFT_UP(self.tbicon, self.OnTaskBarLeftDClick)
     wx.EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarRightClick)
     file_menu = Menu()
     help_menu = Menu()
