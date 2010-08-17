@@ -128,6 +128,7 @@ class MyFrame(Frame):
     self.tbicon.SetIcon(icon, '')
     wx.EVT_TASKBAR_LEFT_UP(self.tbicon, self.OnTaskBarLeftDClick)
     wx.EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarRightClick)
+    self.Bind(wx.EVT_ICONIZE, self.onMinimize)
     file_menu = Menu()
     help_menu = Menu()
     file_menu.Append(ID_EXIT, "E&xit", "Exit PowerPanel")
@@ -165,6 +166,9 @@ class MyFrame(Frame):
     self.tbicon.RemoveIcon()
     reactor.stop()
     exit()
+
+  def onMinimize(self, event):
+    self.Hide() # this removes it from the taskbar so it only appears in the system tray
     
   def OnClose(self, event):
     self.tbicon.RemoveIcon()
@@ -207,6 +211,7 @@ class MyFrame(Frame):
 
   def OnTaskBarLeftDClick(self, evt):
         self.Show()
+        self.Restore()
 
   def ServerIsRunning(self, state):
       if state == True:
