@@ -5,8 +5,8 @@
 *.o
 *.so
 *.log
-TCPclientdroid/bin/
-TCPclientdroid/gen/
-TCPserver/dist/
-TCPserver/build/
-TCPserver/nbproject/
+PowerPanelClient/bin/
+PowerPanelClient/gen/
+PowerPanelServer/dist/
+PowerPanelServer/build/
+PowerPanelServer/nbproject/
