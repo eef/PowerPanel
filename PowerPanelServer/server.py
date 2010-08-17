@@ -125,6 +125,7 @@ class MyFrame(Frame):
     self.tbicon = wx.TaskBarIcon()
     self.icon_state = False
     icon = wx.Icon('icons.ico', wx.BITMAP_TYPE_ICO)
+    self.SetIcon(icon)
     self.tbicon.SetIcon(icon, 'PowerPanelServer')
     wx.EVT_TASKBAR_LEFT_UP(self.tbicon, self.OnTaskBarLeftDClick)
     wx.EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarRightClick)
@@ -233,8 +234,6 @@ class MyFrame(Frame):
 class MyApp(App):
   def OnInit(self):
     frame = MyFrame(None, -1, "Power Panel")
-    icon1 = wx.Icon('icons.ico', wx.BITMAP_TYPE_ICO)
-    frame.SetIcon(icon1) 
     self.SetTopWindow(frame)    
     return True
 
