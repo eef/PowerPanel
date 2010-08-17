@@ -212,6 +212,7 @@ class MyFrame(Frame):
   def OnTaskBarLeftDClick(self, evt):
         self.Show()
         self.Restore()
+        
 
   def ServerIsRunning(self, state):
       if state == True:
