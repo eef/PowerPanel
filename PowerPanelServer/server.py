@@ -160,7 +160,10 @@ class MyFrame(Frame):
     self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     panel.SetSizer(vbox)
-    self.Centre()
+#    self.Centre()
+    self.port = reactor.listenUDP(2501, MyProtocol())
+    self.SetStatusText("Server: Online")
+
 
   def DoExit(self, event):
     self.tbicon.RemoveIcon()
@@ -232,8 +235,8 @@ class MyFrame(Frame):
 class MyApp(App):
   def OnInit(self):
     frame = MyFrame(None, -1, "Power Panel")
-    frame.Show(True)
-    self.SetTopWindow(frame)
+#    frame.Show(True)
+    self.SetTopWindow(frame)    
     return True
 
 
