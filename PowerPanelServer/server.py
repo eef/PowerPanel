@@ -160,10 +160,8 @@ class MyFrame(Frame):
     self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     panel.SetSizer(vbox)
-#    self.Centre()
-    self.port = reactor.listenUDP(2501, MyProtocol())
-    self.SetStatusText("Server: Online")
-
+    self.Centre()
+    self.OnStart(self)
 
   def DoExit(self, event):
     self.tbicon.RemoveIcon()
