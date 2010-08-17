@@ -162,10 +162,12 @@ class MyFrame(Frame):
     self.Centre()
 
   def DoExit(self, event):
+    self.tbicon.RemoveIcon()
     reactor.stop()
     exit()
     
   def OnClose(self, event):
+    self.tbicon.RemoveIcon()
     reactor.stop()
     exit()
     
