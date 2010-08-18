@@ -82,9 +82,9 @@ public class Servers {
 		}
 		nextID += 1;
 		if(isSaved) {
-			Log.d("setting status to ponline", "Yes");
+			Log.d("setting status to ponline", savedName.toLowerCase());
 			bogla.setStatus("ponline");
-			bogla.setName(savedName);
+			bogla.setName(savedName.toLowerCase());
 			bogla.setPKey(pKey);
 			serverList.add(bogla);
 		} else {
