@@ -20,6 +20,7 @@ ID_SAVE_CONFIG  = 107
 ID_SALT  = 108
 ID_ICON_TIMER = wx.NewId()
 
+
 class  Handler(object):
 
   def get_mac_address(self):
@@ -124,6 +125,7 @@ class MyFrame(Frame):
     self.CreateStatusBar()
     self.tbicon = wx.TaskBarIcon()
     self.icon_state = False
+    self.window_viz = False
     icon = wx.Icon('icons.ico', wx.BITMAP_TYPE_ICO)
     self.SetIcon(icon)
     self.tbicon.SetIcon(icon, 'PowerPanelServer')
@@ -143,7 +145,7 @@ class MyFrame(Frame):
     EVT_MENU(self, ID_EXIT,  self.DoExit)
     EVT_MENU(self, ID_ABOUT,  self.OnAboutBox)
     EVT_MENU(self, ID_CFG,  self.OpenConfig)
-
+    
     panel = wx.Panel(self, -1)
     vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -159,6 +161,8 @@ class MyFrame(Frame):
     self.Bind(wx.EVT_BUTTON, self.OnStart, id=ID_START)
     self.Bind(wx.EVT_BUTTON, self.OnStop, id=ID_STOP)
     self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+
 
     panel.SetSizer(vbox)
     self.Centre()
@@ -181,7 +185,17 @@ class MyFrame(Frame):
     cfg_frame = Config(None, -1, "Configuration")
     cfg_frame.Show(True)
     return True
-    
+
+  def ToggleViewState(self):
+    if (self.window_viz == True):
+        self.window_viz = False
+        self.Hide()
+        wx.GetApp().ProcessIdle()
+    else:
+        self.window_viz = True
+        self.Show()
+        self.Restore()
+
   def OnStart(self, event):
     if self.settings.load() == True:
       self.port = reactor.listenUDP(2501, MyProtocol())
@@ -212,24 +226,10 @@ class MyFrame(Frame):
     wx.AboutBox(info)
 
   def OnTaskBarLeftDClick(self, evt):
-        self.Show()
-        self.Restore()
-        
-
-  def ServerIsRunning(self, state):
-      if state == True:
-          icon = wx.Icon('not_running.pmg', wx.BITMAP_TYPE_PNG)
-          self.tbicon.SetIcon(icon, 'Not Running')
-      else:
-          icon = wx.Icon('running.png', wx.BITMAP_TYPE_PNG)
-          self.tbicon.SetIcon(icon, 'Running')
-
+        self.ToggleViewState()    
+     
   def OnTaskBarRightClick(self, evt):
-      #right clicking icon should pop up the main window
-      self.Hide()
-      wx.GetApp().ProcessIdle()
-
-
+      self.ToggleViewState() 
 
 class MyApp(App):
   def OnInit(self):
