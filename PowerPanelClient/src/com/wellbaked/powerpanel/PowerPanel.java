@@ -63,7 +63,7 @@ public class PowerPanel extends ListActivity {
 				new RefreshList().execute();
 			}
 		});
-		makeToast("Dicovering servers...", true);
+		makeToast("Discovering servers...", true);
 		new Construct().execute();
 	}
 
