@@ -9,7 +9,7 @@
 		android:id="@+id/TableLayout01"
 		android:layout_width="fill_parent"
 		android:layout_height="80px"
-		android:background="@drawable/title_background"
+		android:background="@drawable/list_bg"
 		android:stretchColumns="1" android:layout_gravity="center_vertical">
 		 <TableRow>
         <TextView android:layout_marginLeft="10px" android:textSize="33px" android:layout_marginTop="20px" android:text="Power" android:textColor="@color/white"/>
