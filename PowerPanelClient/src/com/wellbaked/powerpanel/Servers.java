@@ -8,8 +8,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -29,7 +27,6 @@ public class Servers {
 	private List<Server> serverList = new ArrayList<Server>();
 	private List<String> serverInfo = new ArrayList<String>();
 	private int nextID;
-	private Iterator<Integer> serverID = null;
 	private Server server = null;
 	private List<Server> displayList = new ArrayList<Server>();
 	private String status = new String();
@@ -59,7 +56,6 @@ public class Servers {
 			e.printStackTrace();
 		}
 		try {
-			Log.d(tag, "trying dicover");
 			discover();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -70,37 +66,30 @@ public class Servers {
 	public void addToServerList(InetAddress newServerIP, String pKey) {
 		boolean server = getServer(newServerIP.toString());
 		Server bogla = new Server(nextID, newServerIP);
-		Log.d("Addtoserverlist", pKey);
 		String name = database.isSaved(pKey);
 		if (name.length() > 0) {
 			isSaved = true;
 			savedName = name;
-			Log.d("isSaved", "Yes");
 		} else {
 			isSaved = false;
-			Log.d("isSaved", "No");
 		}
 		nextID += 1;
 		if(isSaved) {
-			Log.d("setting status to ponline", savedName.toLowerCase());
 			bogla.setStatus("ponline");
 			bogla.setName(savedName.toLowerCase());
 			bogla.setPKey(pKey);
 			serverList.add(bogla);
 		} else {
-			Log.d("setting status to online", "Yes");
 			bogla.setStatus("online");
 			bogla.setPKey(pKey);
 			serverList.add(bogla);
 		}
 		if (!server) {
-			Log.d("not in server list", "no");
 			displayList.add(bogla);
 		}
 	}
 
 	public String wakeUp(int serverID){
-		Log.d("####3 server ID:",Integer.toString(serverID));
 		final int WOLPORT = 9;    
 		Server wolserver = getServer(serverID);
 		        //String ipStr = wolserver.getServerIP().toString();
@@ -116,9 +105,7 @@ public class Servers {
 		            for (int i = 6; i < bytes.length; i += macBytes.length) {
 		                System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
 		            }
-		            Log.d("####PORT",Integer.toString(WOLPORT));
 		            InetAddress address = wolserver.getServerIP();
-		            Log.d("####IP",wolserver.getServerIP().toString());
 		            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, WOLPORT);
 		            DatagramSocket socket = new DatagramSocket();
 		            socket.send(packet);
@@ -126,7 +113,6 @@ public class Servers {
 		            return "success";		            
 		        }
 		        catch (Exception e) {
-		        	Log.d("####","failed");
 		        	return "failed";
 		        }
 	}
@@ -192,8 +178,6 @@ public class Servers {
 				if (current_server.hostname
 						.equals(current_server_list.hostname)) {
 					status = "online";
-					Log.d(tag, "Device [" + current_server.hostname
-							+ "] is online");
 					current_server_list.setServerID(current_server
 							.getServerID());
 					String name = database.isSaved(current_server.pKey);
@@ -206,7 +190,6 @@ public class Servers {
 				}
 			}
 		} else {
-			Log.d(tag, "Device [" + current_server.hostname + "] is offline");
 			status = "offline";
 		}
 		return status;
@@ -255,12 +238,9 @@ public class Servers {
 
 	public boolean pair(int serverID) {
 		server = getServer(serverID);
-		Log.d(tag, "id: " + Integer.toString(serverID));
-		Log.d(tag, "2");
 		boolean paired = false;
 		try {
 			if (server.isPaired()) {
-				Log.d(tag, "paired");
 				paired = true;
 			} else {
 				String reply = doSend("pair:0", server);
@@ -309,9 +289,6 @@ public class Servers {
 
 	public Server getServer(int serverID) {
 		Iterator<Server> servers = displayList.iterator();
-		if (servers.hasNext()) {
-			Log.d(tag, "getServer has next");
-		}
 		while (servers.hasNext()) {
 			Server current_server = servers.next();
 			if (current_server.getServerID() == serverID) {

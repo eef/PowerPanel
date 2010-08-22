@@ -10,11 +10,11 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -22,11 +22,8 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,14 +45,17 @@ public class PowerPanel extends ListActivity {
 	public String shutdownSecs;
 	public Integer test = 0;
 	Button btn1;
+	public static final String PREFS_NAME = "ppprefs";
+	SharedPreferences settings;
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		Log.d(tag, "created server object");
 		super.onCreate(icicle);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		settings = getSharedPreferences(PREFS_NAME, 0);
+		first_time_check();
 		btn1 = (Button) this.findViewById(R.id.Button01);
 		btn1.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -166,8 +166,6 @@ public class PowerPanel extends ListActivity {
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
-									Log.d("#################################",
-											Integer.toString(id));
 									processWakeUP(id);
 								}
 							}).setNegativeButton(R.string.cancel,
@@ -377,7 +375,6 @@ public class PowerPanel extends ListActivity {
 	private void refreshIPs() {
 		complist.clear();
 		try {
-			Log.d(tag, "trying dicover");
 			serversobject.discover();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -426,7 +423,6 @@ public class PowerPanel extends ListActivity {
 			try {
 				JSONObject object = (JSONObject) new JSONTokener(item)
 						.nextValue();
-				Log.d("SHOW NAME", object.getString("name"));
 				label.setText(object.getString("name"));
 				// ImageView icon = (ImageView) row.findViewById(R.id.icon);
 				if (object.getString("status").equals("ponline")) {
@@ -459,12 +455,6 @@ public class PowerPanel extends ListActivity {
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, REFRESH_ID, 0, "Refresh").setIcon(R.drawable.refresh);
-
-		// menu.add(0, CLEARDB_ID, 0,
-		// "Clear Database").setIcon(R.drawable.refresh);
-
-		menu.add(0, CLEARDB_ID, 0, "Clear Database")
-				.setIcon(R.drawable.refresh);
 
 		return true;
 	}
@@ -624,7 +614,6 @@ public class PowerPanel extends ListActivity {
 
 	class SendWOL extends AsyncTask<Void, Integer, Void> {
 		protected Void doInBackground(Void... unused) {
-			Log.d("################2", "asdasd");
 			status = serversobject.wakeUp(id);
 			return (null);
 		}
@@ -658,6 +647,19 @@ public class PowerPanel extends ListActivity {
 			refreshList();
 			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
+	}
+	
+	private boolean first_time_check() {
+	    String first = settings.getString("first", null);
+	    SharedPreferences.Editor editor = settings.edit();
+	    if((first == null)){
+	    	makeAlert("Welcome to PowerPanel.  Please download the desktop application from:\n\n http://www.wellbaked.net", "Welcome!");
+	    	editor.putString("first", "yes");
+	        editor.commit();
+	        return false;
+	    }
+	    else 
+	        return true;
 	}
 
 }
