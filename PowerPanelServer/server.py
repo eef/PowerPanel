@@ -9,6 +9,8 @@ wxreactor.install()
 from twisted.internet import reactor
 from hashlib import sha1
 import xml.dom.minidom
+import string
+import random
 
 ID_EXIT  = 101
 ID_START  = 102
@@ -120,6 +122,8 @@ class MyFrame(Frame):
   def __init__(self, parent, ID, title):
     Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(180, 160))
     self.settings = Settings()
+    self.settings.file_exist()
+    self.settings.get_password()
     self.settings.get_salt()
     self.SetSizeHints(180,160,180,160)
     self.CreateStatusBar()
@@ -135,7 +139,6 @@ class MyFrame(Frame):
     file_menu = Menu()
     help_menu = Menu()
     file_menu.Append(ID_EXIT, "E&xit", "Exit PowerPanel")
-    file_menu.Append(ID_CFG, "C&onfig", "Configure PowerPanel")
     help_menu.Append(ID_ABOUT, "A&bout", "About PowerPanel")
     menuBar = MenuBar()
     menuBar.Append(file_menu, "&File")
@@ -144,7 +147,6 @@ class MyFrame(Frame):
     self.SetMenuBar(menuBar)
     EVT_MENU(self, ID_EXIT,  self.DoExit)
     EVT_MENU(self, ID_ABOUT,  self.OnAboutBox)
-    EVT_MENU(self, ID_CFG,  self.OpenConfig)
     
     panel = wx.Panel(self, -1)
     vbox = wx.BoxSizer(wx.VERTICAL)
@@ -177,9 +179,7 @@ class MyFrame(Frame):
     self.Hide() # this removes it from the taskbar so it only appears in the system tray
     
   def OnClose(self, event):
-    self.tbicon.RemoveIcon()
-    reactor.stop()
-    exit()
+    self.Hide()
     
   def OpenConfig(self, event):
     cfg_frame = Config(None, -1, "Configuration")
@@ -259,10 +259,49 @@ class Settings():
       return True
     else:
       return False
+      
+  def file_exist(self):
+    if not os.path.isfile("config.xml"):
+      dlg = wx.MessageDialog(None, "Welcome to PowerPanel Beta\n\nYou can find PowerPanel in the system tray on start up.", "First time", wx.OK)
+      result = dlg.ShowModal()
+      dlg.Destroy()
+      salt = self.get_password()
+      file = open("config.xml", "w+")
+      salted = """<?xml version="1.0" encoding="windows-1252"?>
+<config saved="1">
+  <salt>%s</salt>
+</config>
+  """ % salt
+      file.write(salted)
+      file.close()
 
   def load_dom(self):
     dom = xml.dom.minidom.parse("config.xml")
     return dom
+    
+  def get_password(self):
+    mac = ""
+    random_string = self.random_string()
+    if sys.platform == 'win32':
+      for line in os.popen("ipconfig /all"):
+        mac = mac + line
+    else:
+      for line in os.popen("/sbin/ifconfig"):
+        mac = mac + line
+    hashed = hashlib.sha1(mac + random_string)
+    return hashed.hexdigest()
+    
+  def random_string(self):
+    random.seed(random.random())
+    d = [random.choice(string.letters) for x in xrange(20)]
+    n = [random.randrange(20, 9999999) for x in xrange(20)]
+    s = ",".join(d)
+    no = ",".join(str(n))
+    s = s.split(",")
+    no = no.split(",")
+    zipped = zip(s, no)
+    hashed = hashlib.sha1(str(zipped))
+    return hashed.hexdigest()
 
   def load(self):
     dom = self.load_dom()
