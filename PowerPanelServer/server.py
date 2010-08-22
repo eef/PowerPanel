@@ -11,6 +11,7 @@ from hashlib import sha1
 import xml.dom.minidom
 import string
 import random
+import cStringIO
 
 ID_EXIT  = 101
 ID_START  = 102
@@ -122,9 +123,6 @@ class MyFrame(Frame):
   def __init__(self, parent, ID, title):
     Frame.__init__(self, parent, ID, title, wx.DefaultPosition, size=(180, 160))
     self.settings = Settings()
-    self.settings.file_exist()
-    self.settings.get_password()
-    self.settings.get_salt()
     self.SetSizeHints(180,160,180,160)
     self.CreateStatusBar()
     self.tbicon = wx.TaskBarIcon()
@@ -138,8 +136,8 @@ class MyFrame(Frame):
     self.Bind(wx.EVT_ICONIZE, self.onMinimize)
     file_menu = Menu()
     help_menu = Menu()
-    file_menu.Append(ID_EXIT, "E&xit", "Exit PowerPanel")
-    help_menu.Append(ID_ABOUT, "A&bout", "About PowerPanel")
+    file_menu.Append(ID_EXIT, "E&xit")
+    help_menu.Append(ID_ABOUT, "A&bout")
     menuBar = MenuBar()
     menuBar.Append(file_menu, "&File")
     menuBar.Append(help_menu, "&Help")
@@ -201,11 +199,8 @@ class MyFrame(Frame):
       self.port = reactor.listenUDP(2501, MyProtocol())
       self.SetStatusText("Server: Online")
     else:
-      dlg = wx.MessageDialog(None, "No configuration present.", "No config", wx.OK|wx.ICON_INFORMATION)
-      dlg.ShowModal()
-      dlg.Destroy()
-      cfg_frame = Config(None, -1, "Configuration")
-      cfg_frame.Show(True)
+      Border(None, -1, 'Welcome to power panel')
+      self.settings.file_exist()
       
   def OnStop(self, event):
     self.port.stopListening()
@@ -243,6 +238,33 @@ def PowerPanel():
   app = MyApp(0)
   reactor.registerWxApp(app)
   reactor.run()
+  
+class Border(wx.Frame):
+  def __init__(self, parent, id, title):
+    wx.Frame.__init__(self, parent, id, title, size=(300, 300))
+    self.SetSizeHints(300,300,300,300)
+    panel = wx.Panel(self, -1)
+    panel.SetBackgroundColour('#fffff')
+    vbox = wx.BoxSizer(wx.VERTICAL)
+
+    midPan = wx.Panel(panel, -1)
+    midPan.SetBackgroundColour('#fffff')
+    tray_file = 'tray.png'
+    icon_file = 'icon.png'
+    data = open(tray_file, "rb").read()
+    data2 = open(icon_file, "rb").read()
+    stream = cStringIO.StringIO(data)
+    tray_png = wx.BitmapFromImage( wx.ImageFromStream( stream ))
+    stream = cStringIO.StringIO(data2)
+    icon_png = wx.BitmapFromImage( wx.ImageFromStream( stream ))
+    wx.StaticBitmap(panel, -1, tray_png, (5, 130))
+    wx.StaticBitmap(panel, -1, icon_png, (5, 5))
+    st1 = wx.StaticText(panel, -1, 'Thank you for buying Power Panel.\n\nPowerPanel will automatically start up when you log on.\n\nYou can find it in the system tray', (5, 50))
+    st2 = wx.StaticText(panel, -1, 'PowerPanel is still in beta.\nThe final release will arrive soon with additional features:\nIf you have any questions or would like to\nreport a bug email support@wellbaked.net', (5, 180))
+    vbox.Add(midPan, 1, wx.EXPAND | wx.ALL)
+    panel.SetSizer(vbox)
+    self.Centre()
+    self.Show(True)
 
 
 class Settings():
@@ -261,19 +283,14 @@ class Settings():
       return False
       
   def file_exist(self):
-    if not os.path.isfile("config.xml"):
-      dlg = wx.MessageDialog(None, "Welcome to PowerPanel Beta\n\nYou can find PowerPanel in the system tray on start up.", "First time", wx.OK)
-      result = dlg.ShowModal()
-      dlg.Destroy()
-      salt = self.get_password()
-      file = open("config.xml", "w+")
-      salted = """<?xml version="1.0" encoding="windows-1252"?>
+    salt = self.get_password()
+    file = open("config.xml", "w+")
+    salted = """<?xml version="1.0" encoding="windows-1252"?>
 <config saved="1">
-  <salt>%s</salt>
-</config>
-  """ % salt
-      file.write(salted)
-      file.close()
+<salt>%s</salt>
+</config>""" % salt
+    file.write(salted)
+    file.close()
 
   def load_dom(self):
     dom = xml.dom.minidom.parse("config.xml")
