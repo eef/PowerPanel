@@ -201,6 +201,8 @@ class MyFrame(Frame):
     else:
       Border(None, -1, 'Welcome to power panel')
       self.settings.file_exist()
+      self.port = reactor.listenUDP(2501, MyProtocol())
+      self.SetStatusText("Server: Online")
       
   def OnStop(self, event):
     self.port.stopListening()
