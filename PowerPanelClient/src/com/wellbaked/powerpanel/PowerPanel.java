@@ -454,8 +454,8 @@ public class PowerPanel extends ListActivity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, REFRESH_ID, 0, "Refresh").setIcon(R.drawable.refresh);
-
+		menu.add(0, REFRESH_ID, 0, "Refresh");
+		menu.add(0, CLEARDB_ID, 0, "Help");
 		return true;
 	}
 
@@ -466,9 +466,7 @@ public class PowerPanel extends ListActivity {
 			new RefreshList().execute();
 			return true;
 		case CLEARDB_ID:
-			clearDatabase();
-			makeToast("Clearing database...", false);
-			new RefreshList().execute();
+			makeAlert("Please visit:\nhttp://www.wellbaked.net\n\nSupport email:\nsupport@wellbaked.net", "Help");
 			return true;
 		}
 		return false;
@@ -653,7 +651,7 @@ public class PowerPanel extends ListActivity {
 	    String first = settings.getString("first", null);
 	    SharedPreferences.Editor editor = settings.edit();
 	    if((first == null)){
-	    	makeAlert("Welcome to PowerPanel.  Please download the desktop application from:\n\n http://www.wellbaked.net", "Welcome!");
+	    	makeAlert("Welcome to PowerPanel.  Please download the desktop application from:\n\nhttp://www.wellbaked.net", "Welcome!");
 	    	editor.putString("first", "yes");
 	        editor.commit();
 	        return false;
