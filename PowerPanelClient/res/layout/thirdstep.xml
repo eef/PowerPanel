@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:scrollbars="vertical"
+    android:background="#000000"  >
+    <ScrollView
+	android:id="@+id/scrllvwNo1"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+	<LinearLayout
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:textSize="30sp"
+    android:padding="10px"
+    android:text="Step 3:" />
+    
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="The first time you run the desktop companion you will get a popup with instructions." />
+    
+   <ImageView   
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:layout_margin="10px"
+  android:src="@drawable/com_first_time"/>
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="You will now have PowerPanel running in the system tray." />
+  
+  <ImageView   
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:layout_margin="10px"
+  android:src="@drawable/sys_tray"/>
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Now that the server is up and running go to step 4 for pairing instructions." />
+    
+
+       <Button android:text="Next >>"
+        android:id="@+id/third_next"
+        android:layout_width="wrap_content"
+        android:textSize="18px"
+        android:layout_margin="10px"
+        android:layout_height="wrap_content">
+    </Button>
+    
+</LinearLayout>
+</ScrollView>
+</LinearLayout>

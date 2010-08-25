@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
@@ -55,16 +56,21 @@ public class PowerPanel extends ListActivity {
 		setContentView(R.layout.main);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		settings = getSharedPreferences(PREFS_NAME, 0);
-		first_time_check();
-		btn1 = (Button) this.findViewById(R.id.Button01);
-		btn1.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				makeToast("Refreshing servers...", false);
-				new RefreshList().execute();
-			}
-		});
-		makeToast("Discovering servers...", true);
-		new Construct().execute();
+		String first = settings.getString("instruct", null);
+		if (first == null) {
+			Intent myIntent = new Intent(thisContext, FirstStep.class);
+	        startActivityForResult(myIntent, 0);
+		} else {
+			btn1 = (Button) this.findViewById(R.id.Button01);
+			btn1.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					makeToast("Refreshing servers...", false);
+					new RefreshList().execute();
+				}
+			});
+			makeToast("Discovering servers...", true);
+			new Construct().execute();
+		}
 	}
 
 	public void listSetup() {
@@ -466,7 +472,8 @@ public class PowerPanel extends ListActivity {
 			new RefreshList().execute();
 			return true;
 		case CLEARDB_ID:
-			makeAlert("Please visit:\nhttp://www.wellbaked.net\n\nSupport email:\nsupport@wellbaked.net", "Help");
+			Intent myIntent = new Intent(thisContext, FirstStep.class);
+	        startActivityForResult(myIntent, 0);
 			return true;
 		}
 		return false;
@@ -646,7 +653,6 @@ public class PowerPanel extends ListActivity {
 			Toast.makeText(thisContext, status, Toast.LENGTH_SHORT).show();
 		}
 	}
-	
 	private boolean first_time_check() {
 	    String first = settings.getString("first", null);
 	    SharedPreferences.Editor editor = settings.edit();
@@ -659,5 +665,4 @@ public class PowerPanel extends ListActivity {
 	    else 
 	        return true;
 	}
-
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:scrollbars="vertical"
+    android:background="#000000"  >
+    <ScrollView
+	android:id="@+id/scrllvwNo1"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+	<LinearLayout
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:textSize="30sp"
+    android:padding="10px"
+    android:text="Step 2:" />
+    
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Now that you have downloaded the desktop companion.  To install the desktop companion open the download.\n\nYour computer will ask for administrator privileges to install, click Allow." />
+    
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="The desktop companion will now be installed!\n\nLook in 'All Programs' in your 'Start Menu' for 'WellBaked', you will find PowerPanel in here." />
+    
+        <ImageView   
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:layout_margin="10px"
+  android:src="@drawable/start_menu"/>
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Now start PowerPanel by clicking it" />
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Now continue onto Step 3" />
+
+       <Button android:text="Next >>"
+        android:id="@+id/second_next"
+        android:layout_width="wrap_content"
+        android:textSize="18px"
+        android:layout_margin="10px"
+        android:layout_height="wrap_content">
+    </Button>    
+</LinearLayout>
+</ScrollView>
+</LinearLayout>

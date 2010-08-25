@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:scrollbars="vertical"
+    android:background="#000000"  >
+    <ScrollView
+	android:id="@+id/scrllvwNo1"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+	<LinearLayout
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:textSize="30sp"
+    android:padding="10px"
+    android:text="Step 4:" />
+    
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Once you launch the application and the desktop companion is running you will need to pair with the computer\n\nComputers will be detected automatically and displayed in a list like below." />
+    
+   <ImageView   
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:layout_margin="10px"
+  android:src="@drawable/np"/>
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Clicking on the computer in the list will give you actions.  Before you can shutdown, restart or hibernate a computer you need to pair." />
+  
+  <ImageView   
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:layout_margin="10px"
+  android:src="@drawable/pair_dev"/>
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="When you request to pair with a computer you need to confirm it on the computer you are pairing with." />
+    
+      <ImageView   
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_margin="10px"
+	  android:src="@drawable/pair_req"/>
+	  
+	  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Once you have paired with the computer you can now shutdown, restart and hibernate the computer." />
+    
+    
+      <ImageView   
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_margin="10px"
+	  android:src="@drawable/paired_menu"/>
+	  
+	          <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Now launch PowerPanel and try yourself!" />
+	  
+	  
+       <Button android:text="LAUNCH"
+        android:id="@+id/four_next"
+        android:layout_width="wrap_content"
+        android:textSize="18px"
+        android:textColor="#308014"
+        android:layout_margin="10px"
+        android:layout_height="wrap_content">
+    </Button>
+    <TextView
+    
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/support_link"
+    android:textColor="#ffffff"
+    android:padding="10px"
+	android:linksClickable="true"
+    android:text="For help, questions, or to give feedback visit support: http://www.wellbaked.net/support" />
+    
+</LinearLayout>
+</ScrollView>
+</LinearLayout>

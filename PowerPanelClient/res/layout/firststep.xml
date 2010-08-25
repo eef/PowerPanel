@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:scrollbars="vertical"
+    android:background="#000000"  >
+    <ScrollView
+	android:id="@+id/scrllvwNo1"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+	<LinearLayout
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"> 
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Welcome to PowerPanel.\n\nPlease follow these simple instructions to get up and running." />
+    
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:textSize="30sp"
+    android:padding="10px"
+    android:text="Step 1:" />
+    
+    <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:id="@+id/support_link"
+    android:text="On your desktop computer please visit:\n\n http://www.wellbaked.net \n\nYou will find the required desktop companion here.\n\nUse the link to download the installer." />
+    
+    <ImageView   
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:layout_margin="10px"
+  android:src="@drawable/download_link"/>
+  
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#ffffff"
+    android:padding="10px"
+    android:text="Once you have downloaded the desktop companion move onto Step 2" />
+
+       <Button android:text="Next >>"
+        android:id="@+id/first_next"
+        android:layout_width="wrap_content"
+        android:textSize="18px"
+        android:layout_margin="10px"
+        android:layout_height="wrap_content">
+    </Button>    
+</LinearLayout>
+</ScrollView>
+</LinearLayout>
