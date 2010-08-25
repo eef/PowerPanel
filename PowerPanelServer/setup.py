@@ -6,7 +6,8 @@ setup(
     windows=[
         {
             'script': 'server.py',
-            'icon_resources': [(1, 'icons.ico')]
+            'icon_resources': [(1, 'icons.ico')],
+            'uac_info': "requireAdministrator"
         },
     ],
 )
