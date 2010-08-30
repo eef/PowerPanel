@@ -111,12 +111,12 @@ public class PowerPanelServerView extends FrameView {
         statusMessageLabel.setText("Server: Offline");
 
         String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
-//        System.out.print(command);
-        try {
-            Process child = Runtime.getRuntime().exec(command);
-        } catch (IOException ex) {
-            Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        System.out.print(command);
+//        try {
+//            Process child = Runtime.getRuntime().exec(command);
+//        } catch (IOException ex) {
+//            Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
