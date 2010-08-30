@@ -24,10 +24,21 @@ import javax.swing.SwingWorker;
 
 public class PowerPanelServerView extends FrameView {
 
+    /*
+     * ADD MORE TODO ITEMS TO THIS LIST WHEN YOU THINK SOMETHING NEEDS DONE
+     *
+     * TODO runCommand should return a String array, first element will be the response to the android app and second element will be a status msg
+     * TODO implement the configuration class to create a ResourceBundle using the JSON string of config options found in APPDATA/config.cfg
+     * TODO do the networking stuff properly.  It is sitting in this file and run on a thread when the start button is pressed.  Look into running a instance of a network class, exposing start and stop methods
+     * TODO complete the instructions window
+     *
+     */
+    
     public boolean STATE = true;
     Configuration config = new Configuration();
     SwingWorker worker;
     DatagramSocket serverSocket;
+    Commands commander = new Commands();
 
     void updateStatus(final int i) {
         Runnable doSetProgressBarValue = new Runnable() {
@@ -58,13 +69,15 @@ public class PowerPanelServerView extends FrameView {
                             serverSocket.receive(receivePacket);
                             String sentence = new String(receivePacket.getData());
                             System.out.println("RECEIVED: " + sentence);
+                            EventQueue.invokeLater(new runCommand(sentence));
                             InetAddress IPAddress = receivePacket.getAddress();
                             int port = receivePacket.getPort();
                             String capitalizedSentence = sentence.toUpperCase();
                             sendData = capitalizedSentence.getBytes();
                             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
                             serverSocket.send(sendPacket);
-                            EventQueue.invokeLater(new setStatus(sentence));
+                            statusAnimationLabel.setIcon(busyIcons[0]);
+//                            EventQueue.invokeLater(new setStatus(sentence));
                         }
                     } catch (SocketException ex) {
                         statusMessageLabel.setText("Server: Offline");
@@ -95,20 +108,26 @@ public class PowerPanelServerView extends FrameView {
         }
     };
 
+
     public PowerPanelServerView(SingleFrameApplication app) {
         super(app);
 
         initComponents();
 
-        config.checkForConfigFile();
+        if(!config.checkForConfigFile()) {
+            showInstructions();
+        }
+
+        config.loadConfig();
+
+        showInstructions();
 
         jButton2.addActionListener(interruptListener);
 
         jButton1.addActionListener(startListener);
 
         jButton2.setVisible(false);
-
-        statusMessageLabel.setText("Server: Offline");
+        
 
         String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
         System.out.print(command);
@@ -184,6 +203,16 @@ public class PowerPanelServerView extends FrameView {
         PowerPanelServerApp.getApplication().show(aboutBox);
     }
 
+    @Action
+    public void showInstructions() {
+        if (instructionsBox == null) {
+            JFrame mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
+            instructionsBox = new Instructions(mainFrame, true);
+            instructionsBox.setLocationRelativeTo(mainFrame);
+        }
+        PowerPanelServerApp.getApplication().show(instructionsBox);
+    }
+
     private final class setStatus implements Runnable {
 
         private final String status;
@@ -207,6 +236,29 @@ public class PowerPanelServerView extends FrameView {
         }
     }
 
+    private final class runCommand implements Runnable {
+
+        private final String command;
+
+        public runCommand(String command) {
+            this.command = command;
+        }
+
+        public void run() {
+            try {
+                JFrame mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
+                String[] temp = this.command.split(":");
+                statusMessageLabel.setText(temp[1]);
+                statusMessageLabel.setText(commander.runCommand(this.command));
+                statusAnimationLabel.setIcon(idleIcon);
+            } catch (Exception e) {
+                Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, e);
+            }
+
+
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -219,13 +271,16 @@ public class PowerPanelServerView extends FrameView {
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         statusPanel = new javax.swing.JPanel();
         javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
         statusMessageLabel = new javax.swing.JLabel();
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
 
+        mainPanel.setMaximumSize(new java.awt.Dimension(200, 200));
         mainPanel.setName("mainPanel"); // NOI18N
+        mainPanel.setPreferredSize(new java.awt.Dimension(174, 25));
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(powerpanelserver.PowerPanelServerApp.class).getContext().getResourceMap(PowerPanelServerView.class);
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
@@ -239,20 +294,20 @@ public class PowerPanelServerView extends FrameView {
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGap(4, 4, 4)
+                .addContainerGap()
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton2)
-                .addContainerGap(86, Short.MAX_VALUE))
+                .addContainerGap(322, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addContainerGap(75, Short.MAX_VALUE))
+                .addGap(230, 230, 230))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -271,8 +326,16 @@ public class PowerPanelServerView extends FrameView {
         helpMenu.setName("helpMenu"); // NOI18N
 
         aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
+        aboutMenuItem.setText(resourceMap.getString("aboutMenuItem.text")); // NOI18N
         aboutMenuItem.setName("aboutMenuItem"); // NOI18N
         helpMenu.add(aboutMenuItem);
+
+        jMenuItem1.setAction(actionMap.get("showInstructions")); // NOI18N
+        jMenuItem1.setMnemonic('H');
+        jMenuItem1.setText(resourceMap.getString("jMenuItem1.text")); // NOI18N
+        jMenuItem1.setToolTipText(resourceMap.getString("jMenuItem1.toolTipText")); // NOI18N
+        jMenuItem1.setName("jMenuItem1"); // NOI18N
+        helpMenu.add(jMenuItem1);
 
         menuBar.add(helpMenu);
 
@@ -291,11 +354,11 @@ public class PowerPanelServerView extends FrameView {
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 280, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusAnimationLabel)
@@ -317,9 +380,11 @@ public class PowerPanelServerView extends FrameView {
         setMenuBar(menuBar);
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JProgressBar progressBar;
@@ -333,4 +398,5 @@ public class PowerPanelServerView extends FrameView {
     private final Icon[] busyIcons = new Icon[15];
     private int busyIconIndex = 0;
     private JDialog aboutBox;
+    private JDialog instructionsBox;
 }

@@ -1,8 +1,15 @@
 package powerpanelserver;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -14,17 +21,40 @@ import java.util.logging.Logger;
 
 public class Configuration extends ListResourceBundle {
 
+    private String appDataPath = System.getenv("APPDATA");
+    private String powerPanelSettingsPath = appDataPath + "\\wellbaked\\powerpanel\\";
+    private String jsonString;
+
     public Object[][] getContents() {
         return contents;
     }
     static final Object[][] contents = {
         {"macAddress", macAddress()},
-
+        {"hostName", generateHostname()}
     };
 
+    public void loadConfig() {
+        FileInputStream configFileInput = null;
+        DataInputStream dis = null;
+        try {
+            FileInputStream fstream = new FileInputStream(powerPanelSettingsPath + "config.cfg");
+            dis = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+            String strLine;
+            jsonString = br.readLine();
+        } catch (IOException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                dis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+
     public boolean checkForConfigFile() {
-        String appDataPath = System.getenv("APPDATA");
-        String powerPanelSettingsPath = appDataPath + "\\wellbaked\\powerpanel\\";
         File file = new File(powerPanelSettingsPath);
         boolean exists = file.exists();
         if (!exists) {
@@ -32,11 +62,13 @@ public class Configuration extends ListResourceBundle {
             System.out.println("the file or directory you are searching does not exist: " + exists);
             if (success) {
                 System.out.println("Directory: " + powerPanelSettingsPath + " created");
-                createConfigFile(powerPanelSettingsPath);
+                if (createConfigFile(powerPanelSettingsPath)) {
+                    return false;
+                }
             }
         } else {
-            // It returns true if File or directory exists
             System.out.println("the file or directory exists: " + exists);
+            return true;
         }
         return true;
     }
@@ -66,12 +98,12 @@ public class Configuration extends ListResourceBundle {
         return macAdd;
     }
 
-    private String generatePrivateKey() {
+    private static String generatePrivateKey() {
         String uuid = UUID.randomUUID().toString().replace("-", "");
         return uuid;
     }
 
-    private String getHostname() {
+    private static String generateHostname() {
         String computerName = "";
         try {
             computerName = InetAddress.getLocalHost().getHostName();
@@ -82,20 +114,22 @@ public class Configuration extends ListResourceBundle {
         return computerName;
     }
 
-    private String getOSInfo() {
+    private String generateOSInfo() {
         String nameOS = "os.name";
         String versionOS = "os.version";
         return System.getProperty(nameOS) + " " + System.getProperty(versionOS);
     }
 
-    private void createConfigFile(String path) {
+    private boolean createConfigFile(String path) {
         try {
             FileWriter fstream = new FileWriter(path + "config.cfg");
             BufferedWriter out = new BufferedWriter(fstream);
-            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + getHostname() + "', 'osInfo':'" + getOSInfo() + "'}");
+            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "'}");
             out.close();
+            return true;
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            return false;
         }
     }
 }
