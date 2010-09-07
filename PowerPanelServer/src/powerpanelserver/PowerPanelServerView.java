@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -33,12 +34,19 @@ public class PowerPanelServerView extends FrameView {
      * TODO complete the instructions window
      *
      */
-    
-    public boolean STATE = true;
+    public boolean STATE;
     Configuration config = new Configuration();
     SwingWorker worker;
     DatagramSocket serverSocket;
-    Commands commander = new Commands();
+    JFrame mainFrame;
+    DatagramPacket sendPacket;
+    byte[] receiveData = new byte[1024];
+    byte[] sendData = new byte[1024];
+    InetAddress IPAddress;
+    int port;
+    String capitalizedSentence;
+    String sentence;
+    Commands commander;
 
     void updateStatus(final int i) {
         Runnable doSetProgressBarValue = new Runnable() {
@@ -49,7 +57,6 @@ public class PowerPanelServerView extends FrameView {
         };
         SwingUtilities.invokeLater(doSetProgressBarValue);
     }
-
     ActionListener startListener = new ActionListener() {
 
         public void actionPerformed(ActionEvent event) {
@@ -61,23 +68,16 @@ public class PowerPanelServerView extends FrameView {
                 public Object doInBackground() {
                     try {
                         serverSocket = new DatagramSocket(2501);
-                        byte[] receiveData = new byte[1024];
-                        byte[] sendData = new byte[1024];
                         System.out.println("STARTED");
                         while (true) {
                             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                             serverSocket.receive(receivePacket);
-                            String sentence = new String(receivePacket.getData());
+                            sentence = new String(receivePacket.getData());
                             System.out.println("RECEIVED: " + sentence);
+                            IPAddress = receivePacket.getAddress();
+                            port = receivePacket.getPort();
                             EventQueue.invokeLater(new runCommand(sentence));
-                            InetAddress IPAddress = receivePacket.getAddress();
-                            int port = receivePacket.getPort();
-                            String capitalizedSentence = sentence.toUpperCase();
-                            sendData = capitalizedSentence.getBytes();
-                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-                            serverSocket.send(sendPacket);
                             statusAnimationLabel.setIcon(busyIcons[0]);
-//                            EventQueue.invokeLater(new setStatus(sentence));
                         }
                     } catch (SocketException ex) {
                         statusMessageLabel.setText("Server: Offline");
@@ -108,26 +108,22 @@ public class PowerPanelServerView extends FrameView {
         }
     };
 
-
     public PowerPanelServerView(SingleFrameApplication app) {
         super(app);
 
         initComponents();
-
-        if(!config.checkForConfigFile()) {
+        mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
+        commander = new Commands(mainFrame);
+        if (!config.checkForConfigFile()) {
             showInstructions();
         }
-
-        config.loadConfig();
-
-        showInstructions();
 
         jButton2.addActionListener(interruptListener);
 
         jButton1.addActionListener(startListener);
 
         jButton2.setVisible(false);
-        
+
 
         String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
         System.out.print(command);
@@ -196,7 +192,7 @@ public class PowerPanelServerView extends FrameView {
     @Action
     public void showAboutBox() {
         if (aboutBox == null) {
-            JFrame mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
+            mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
             aboutBox = new PowerPanelServerAboutBox(mainFrame);
             aboutBox.setLocationRelativeTo(mainFrame);
         }
@@ -206,7 +202,7 @@ public class PowerPanelServerView extends FrameView {
     @Action
     public void showInstructions() {
         if (instructionsBox == null) {
-            JFrame mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
+            mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
             instructionsBox = new Instructions(mainFrame, true);
             instructionsBox.setLocationRelativeTo(mainFrame);
         }
@@ -223,7 +219,6 @@ public class PowerPanelServerView extends FrameView {
 
         public void run() {
             try {
-                JFrame mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
                 String[] temp = this.status.split(":");
                 statusMessageLabel.setText(System.getenv("APPDATA"));
 //                String command = "shutdown /s /t 600";
@@ -246,10 +241,12 @@ public class PowerPanelServerView extends FrameView {
 
         public void run() {
             try {
-                JFrame mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
-                String[] temp = this.command.split(":");
-                statusMessageLabel.setText(temp[1]);
-                statusMessageLabel.setText(commander.runCommand(this.command));
+                Map<String, String> ret = commander.runCommand(this.command);
+                capitalizedSentence = sentence.toUpperCase();
+                sendData = ret.get("response").getBytes();
+                sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+                statusMessageLabel.setText("Server: Online - " + ret.get("status"));
                 statusAnimationLabel.setIcon(idleIcon);
             } catch (Exception e) {
                 Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, e);
@@ -284,9 +281,11 @@ public class PowerPanelServerView extends FrameView {
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(powerpanelserver.PowerPanelServerApp.class).getContext().getResourceMap(PowerPanelServerView.class);
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setToolTipText(resourceMap.getString("jButton1.toolTipText")); // NOI18N
         jButton1.setName("jButton1"); // NOI18N
 
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        jButton2.setToolTipText(resourceMap.getString("jButton2.toolTipText")); // NOI18N
         jButton2.setName("jButton2"); // NOI18N
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
@@ -380,7 +379,6 @@ public class PowerPanelServerView extends FrameView {
         setMenuBar(menuBar);
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

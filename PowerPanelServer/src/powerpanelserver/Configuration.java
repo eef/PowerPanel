@@ -1,12 +1,10 @@
 package powerpanelserver;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,21 +17,14 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Configuration extends ListResourceBundle {
+public class Configuration {
 
     private String appDataPath = System.getenv("APPDATA");
     private String powerPanelSettingsPath = appDataPath + "\\wellbaked\\powerpanel\\";
     private String jsonString;
+    private JSONObject jsonObject;
 
-    public Object[][] getContents() {
-        return contents;
-    }
-    static final Object[][] contents = {
-        {"macAddress", macAddress()},
-        {"hostName", generateHostname()}
-    };
-
-    public void loadConfig() {
+    public Configuration() {
         FileInputStream configFileInput = null;
         DataInputStream dis = null;
         try {
@@ -42,6 +33,7 @@ public class Configuration extends ListResourceBundle {
             BufferedReader br = new BufferedReader(new InputStreamReader(dis));
             String strLine;
             jsonString = br.readLine();
+            makeJSON(jsonString);
         } catch (IOException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -52,6 +44,14 @@ public class Configuration extends ListResourceBundle {
             }
         }
 
+    }
+
+    private void makeJSON(String jsonString) {
+        try {
+            jsonObject = (JSONObject) new JSONTokener(jsonString).nextValue();
+        } catch (JSONException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public boolean checkForConfigFile() {
@@ -130,6 +130,42 @@ public class Configuration extends ListResourceBundle {
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             return false;
+        }
+    }
+
+    public String getPrivateKey() {
+        try {
+            return jsonObject.getString("privateKey");
+        } catch (JSONException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            return "No Private Key";
+        }
+    }
+
+    public String getMacAddress() {
+        try {
+            return jsonObject.getString("macAddress");
+        } catch (JSONException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            return "No Mac Address";
+        }
+    }
+
+    public String getHostName() {
+        try {
+            return jsonObject.getString("hostName");
+        } catch (JSONException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            return "No Mac Address";
+        }
+    }
+
+    public String getOsInfo() {
+        try {
+            return jsonObject.getString("hostName");
+        } catch (JSONException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            return "No Mac Address";
         }
     }
 }
