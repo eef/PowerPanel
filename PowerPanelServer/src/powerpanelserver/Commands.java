@@ -1,7 +1,10 @@
 package powerpanelserver;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -27,7 +30,7 @@ public class Commands {
         HIBERNATE() {
 
             @Override
-            public Map execute() {
+            public Map execute(String option) {
                 response = "Hibernate command received";
                 status = "Hibernate command executed";
                 ret.put("status", status);
@@ -38,7 +41,13 @@ public class Commands {
         SHUTDOWN() {
 
             @Override
-            public Map execute() {
+            public Map execute(String option) {
+                try {
+                    Process child = Runtime.getRuntime().exec("" + option);
+
+                } catch (IOException ex) {
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 response = "Shutdown command received";
                 status = "Shutdown command executed";
                 ret.put("status", status);
@@ -49,7 +58,7 @@ public class Commands {
         HELLO() {
 
             @Override
-            public Map execute() {
+            public Map execute(String option) {
                 response = "Hello command received";
                 status = "Hello command executed";
                 ret.put("status", status);
@@ -60,7 +69,7 @@ public class Commands {
         RESTART() {
 
             @Override
-            public Map execute() {
+            public Map execute(String option) {
                 response = "Restart command received";
                 status = "Restart command executed";
                 ret.put("status", status);
@@ -71,9 +80,9 @@ public class Commands {
         PAIR() {
 
             @Override
-            public Map execute() {
+            public Map execute(String option) {
                 confirm = JOptionPane.showConfirmDialog(null, "Would you like to pair?");
-                if(confirm == 0) {
+                if (confirm == 0) {
                     status = "Pair successful";
                     pairAnswer = "yes";
                 } else {
@@ -87,11 +96,11 @@ public class Commands {
             }
         };
 
-        public abstract Map execute();
+        public abstract Map execute(String option);
     }
 
     public Map runCommand(String command) {
         String[] options = command.split(":");
-        return Command.valueOf(options[0].trim().toUpperCase()).execute();
+        return Command.valueOf(options[0].trim().toUpperCase()).execute(options[0].trim());
     }
 }
