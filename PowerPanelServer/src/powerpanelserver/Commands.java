@@ -8,8 +8,9 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import jwsf.exitwindows.ExitWindows;
 
-public class Commands {
+public class Commands extends Utils {
 
     private static String status;
     private static String response;
@@ -39,17 +40,21 @@ public class Commands {
             }
         },
         SHUTDOWN() {
+            private ExitWindows shutdown;
 
             @Override
             public Map execute(String option) {
                 try {
-                    Process child = Runtime.getRuntime().exec("" + option);
-
+                    String seconds = formatSeconds(Integer.parseInt(option));
+                    System.out.print(option);
+                    Process child = Runtime.getRuntime().exec("shutdown -s -t " + option);
+                    response = "Shutdown in " + seconds;
+                    status = "Shutdown in " + seconds;
                 } catch (IOException ex) {
+                    response = "Shutdown command failed";
+                    status = "Shutdown command failed";
                     Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                response = "Shutdown command received";
-                status = "Shutdown command executed";
                 ret.put("status", status);
                 ret.put("response", response);
                 return ret;
@@ -59,7 +64,7 @@ public class Commands {
 
             @Override
             public Map execute(String option) {
-                response = "Hello command received";
+                response = config.getPrivateKey();
                 status = "Hello command executed";
                 ret.put("status", status);
                 ret.put("response", response);
@@ -72,6 +77,24 @@ public class Commands {
             public Map execute(String option) {
                 response = "Restart command received";
                 status = "Restart command executed";
+                ret.put("status", status);
+                ret.put("response", response);
+                return ret;
+            }
+        },
+        CANCEL() {
+
+            @Override
+            public Map execute(String option) {
+                try {
+                    Process child = Runtime.getRuntime().exec("shutdown -a");
+                    response = "Shutdown canceled";
+                    status = "Shutdown canceled";
+                } catch (IOException ex) {
+                    response = "Shutdown cancel failed";
+                    status = "Shutdown cancel failed";
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 ret.put("status", status);
                 ret.put("response", response);
                 return ret;
@@ -101,6 +124,6 @@ public class Commands {
 
     public Map runCommand(String command) {
         String[] options = command.split(":");
-        return Command.valueOf(options[0].trim().toUpperCase()).execute(options[0].trim());
+        return Command.valueOf(options[0].trim().toUpperCase()).execute(options[1].trim());
     }
 }
