@@ -32,8 +32,18 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
-                response = "Hibernate command received";
-                status = "Hibernate command executed";
+                try {
+                    String seconds = formatSeconds(Integer.parseInt(option));
+                    System.out.print(option);
+                    String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
+                    Process child = Runtime.getRuntime().exec(command);
+                    response = "Hiberating";
+                    status = "Hibernating";
+                } catch (IOException ex) {
+                    response = "Hibernate failed";
+                    status = "Hibernate failed";
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 ret.put("status", status);
                 ret.put("response", response);
                 return ret;
