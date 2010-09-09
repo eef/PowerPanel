@@ -33,8 +33,6 @@ public class Commands extends Utils {
             @Override
             public Map execute(String option) {
                 try {
-                    String seconds = formatSeconds(Integer.parseInt(option));
-                    System.out.print(option);
                     String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
                     Process child = Runtime.getRuntime().exec(command);
                     response = "Hiberating";
