@@ -47,6 +47,25 @@ public class Commands extends Utils {
                 return ret;
             }
         },
+        LOCK() {
+
+            @Override
+            public Map execute(String option) {
+                try {
+                    String command = System.getenv("WINDIR") + "\\System32\\rundll32.exe user32.dll,LockWorkStation";
+                    Process child = Runtime.getRuntime().exec(command);
+                    response = "Computer locked";
+                    status = "Computer Locked";
+                } catch (IOException ex) {
+                    response = "Lock failed";
+                    status = "Lock failed";
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                ret.put("status", status);
+                ret.put("response", response);
+                return ret;
+            }
+        },
         SHUTDOWN() {
             private ExitWindows shutdown;
 
