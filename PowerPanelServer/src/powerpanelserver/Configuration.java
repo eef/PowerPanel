@@ -167,4 +167,31 @@ public class Configuration {
             return "No Mac Address";
         }
     }
+
+    public String getOS() {
+        if (isWindows()) {
+            return "windows";
+        } else if (isMac()) {
+            return "mac";
+        } else if (isUnix()) {
+            return "nix";
+        } else {
+            return "unknown";
+        }
+    }
+
+    private boolean isWindows() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.indexOf("win") >= 0);
+    }
+
+    private boolean isMac() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.indexOf("mac") >= 0);
+    }
+
+    private boolean isUnix() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
+    }
 }

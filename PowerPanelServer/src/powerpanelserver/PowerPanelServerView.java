@@ -107,21 +107,14 @@ public final class PowerPanelServerView extends FrameView {
         if (!config.checkForConfigFile()) {
             showInstructions();
         }
+        
+        System.out.print(config.getOS());
 
         jButton2.addActionListener(interruptListener);
 
         jButton1.addActionListener(startListener);
 
         jButton2.setVisible(false);
-
-
-        String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
-        System.out.print(command);
-//        try {
-//            Process child = Runtime.getRuntime().exec(command);
-//        } catch (IOException ex) {
-//            Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
-//        }
 
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
