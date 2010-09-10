@@ -116,7 +116,6 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
                   <action class="powerpanelserver.PowerPanelServerView" id="showInstructions" methodName="showInstructions"/>
                 </Property>
-                <Property name="mnemonic" type="int" value="72"/>
                 <Property name="text" type="java.lang.String" resourceKey="jMenuItem1.text"/>
                 <Property name="toolTipText" type="java.lang.String" resourceKey="jMenuItem1.toolTipText"/>
                 <Property name="name" type="java.lang.String" value="jMenuItem1" noResource="true"/>

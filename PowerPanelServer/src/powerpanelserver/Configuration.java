@@ -12,7 +12,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ListResourceBundle;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,9 +90,9 @@ public class Configuration {
                 System.out.println("Network Interface for the specified address is not found.");
             }
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, e);
         } catch (SocketException e) {
-            e.printStackTrace();
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, e);
         }
         return macAdd;
     }

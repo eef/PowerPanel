@@ -20,10 +20,9 @@ import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-public class PowerPanelServerView extends FrameView {
+public final class PowerPanelServerView extends FrameView {
 
     /*
      * ADD MORE TODO ITEMS TO THIS LIST WHEN YOU THINK SOMETHING NEEDS DONE
@@ -48,15 +47,6 @@ public class PowerPanelServerView extends FrameView {
     String sentence;
     Commands commander;
 
-    void updateStatus(final int i) {
-        Runnable doSetProgressBarValue = new Runnable() {
-
-            public void run() {
-                statusMessageLabel.setText(Integer.toString(i));
-            }
-        };
-        SwingUtilities.invokeLater(doSetProgressBarValue);
-    }
     ActionListener startListener = new ActionListener() {
 
         public void actionPerformed(ActionEvent event) {
@@ -330,7 +320,6 @@ public class PowerPanelServerView extends FrameView {
         helpMenu.add(aboutMenuItem);
 
         jMenuItem1.setAction(actionMap.get("showInstructions")); // NOI18N
-        jMenuItem1.setMnemonic('H');
         jMenuItem1.setText(resourceMap.getString("jMenuItem1.text")); // NOI18N
         jMenuItem1.setToolTipText(resourceMap.getString("jMenuItem1.toolTipText")); // NOI18N
         jMenuItem1.setName("jMenuItem1"); // NOI18N

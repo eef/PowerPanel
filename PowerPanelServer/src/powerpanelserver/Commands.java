@@ -67,6 +67,7 @@ public class Commands extends Utils {
             }
         },
         SHUTDOWN() {
+
             private ExitWindows shutdown;
 
             @Override
@@ -102,8 +103,15 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
-                response = "Restart command received";
-                status = "Restart command executed";
+                try {
+                    Process child = Runtime.getRuntime().exec("shutdown -r");
+                    response = "Restarting";
+                    status = "Restarting";
+                } catch (IOException ex) {
+                    response = "Restart failed";
+                    status = "Restart failed";
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 ret.put("status", status);
                 ret.put("response", response);
                 return ret;
