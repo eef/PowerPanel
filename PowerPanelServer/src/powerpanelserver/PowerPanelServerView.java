@@ -161,10 +161,7 @@ public final class PowerPanelServerView extends FrameView {
 
         public void run() {
             try {
-                String[] temp = this.status.split(":");
-                statusMessageLabel.setText(System.getenv("APPDATA"));
-//                String command = "shutdown /s /t 600";
-//                Process child = Runtime.getRuntime().exec(command);
+                statusMessageLabel.setText("Use this shit");
             } catch (Exception e) {
                 Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, e);
             }
