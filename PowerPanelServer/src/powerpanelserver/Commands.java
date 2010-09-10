@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import jwsf.exitwindows.ExitWindows;
 
 public class Commands extends Utils {
 
@@ -67,9 +66,6 @@ public class Commands extends Utils {
             }
         },
         SHUTDOWN() {
-
-            private ExitWindows shutdown;
-
             @Override
             public Map execute(String option) {
                 try {
@@ -135,6 +131,26 @@ public class Commands extends Utils {
                 return ret;
             }
         },
+
+        INFO() {
+
+            @Override
+            public Map execute(String option) {
+                try {
+                    Process child = Runtime.getRuntime().exec("shutdown -a");
+                    response = "Shutdown canceled";
+                    status = "Shutdown canceled";
+                } catch (IOException ex) {
+                    response = "Shutdown cancel failed";
+                    status = "Shutdown cancel failed";
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                ret.put("status", status);
+                ret.put("response", response);
+                return ret;
+            }
+        },
+
         PAIR() {
 
             @Override
