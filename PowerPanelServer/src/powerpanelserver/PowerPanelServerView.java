@@ -7,7 +7,6 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
-import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.DatagramPacket;
@@ -23,17 +22,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingWorker;
 
 public final class PowerPanelServerView extends FrameView {
-
-    /*
-     * ADD MORE TODO ITEMS TO THIS LIST WHEN YOU THINK SOMETHING NEEDS DONE
-     *
-     * TODO runCommand should return a String array, first element will be the response to the android app and second element will be a status msg
-     * TODO implement the configuration class to create a ResourceBundle using the JSON string of config options found in APPDATA/config.cfg
-     * TODO do the networking stuff properly.  It is sitting in this file and run on a thread when the start button is pressed.  Look into running a instance of a network class, exposing start and stop methods
-     * TODO complete the instructions window
-     *
-     */
-    public boolean STATE;
+    
     Configuration config = new Configuration();
     SwingWorker worker;
     DatagramSocket serverSocket;
@@ -140,36 +129,6 @@ public final class PowerPanelServerView extends FrameView {
         statusAnimationLabel.setIcon(idleIcon);
         progressBar.setVisible(false);
 
-        TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
-        taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-                if ("started".equals(propertyName)) {
-                    if (!busyIconTimer.isRunning()) {
-                        statusAnimationLabel.setIcon(busyIcons[0]);
-                        busyIconIndex = 0;
-                        busyIconTimer.start();
-                    }
-                    progressBar.setVisible(true);
-                    progressBar.setIndeterminate(true);
-                } else if ("done".equals(propertyName)) {
-                    busyIconTimer.stop();
-                    statusAnimationLabel.setIcon(idleIcon);
-                    progressBar.setVisible(false);
-                    progressBar.setValue(0);
-                } else if ("message".equals(propertyName)) {
-                    String text = (String) (evt.getNewValue());
-                    statusMessageLabel.setText((text == null) ? "" : text);
-                    messageTimer.restart();
-                } else if ("progress".equals(propertyName)) {
-                    int value = (Integer) (evt.getNewValue());
-                    progressBar.setVisible(true);
-                    progressBar.setIndeterminate(false);
-                    progressBar.setValue(value);
-                }
-            }
-        });
     }
 
     @Action
