@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.SystemUtils;
 
 public class Configuration {
 
@@ -173,25 +174,22 @@ public class Configuration {
             return "windows";
         } else if (isMac()) {
             return "mac";
-        } else if (isUnix()) {
-            return "nix";
+        } else if (isLinux()) {
+            return "linux";
         } else {
             return "unknown";
         }
     }
 
     private boolean isWindows() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("win") >= 0);
+        return (SystemUtils.IS_OS_WINDOWS);
     }
 
     private boolean isMac() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("mac") >= 0);
+        return (SystemUtils.IS_OS_MAC_OSX);
     }
 
-    private boolean isUnix() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
+    private boolean isLinux() {
+        return (SystemUtils.IS_OS_LINUX);
     }
 }

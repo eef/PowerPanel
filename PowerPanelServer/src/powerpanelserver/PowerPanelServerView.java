@@ -1,6 +1,8 @@
 package powerpanelserver;
 
 import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.SocketException;
 import org.jdesktop.application.Action;
@@ -22,7 +24,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingWorker;
 
 public final class PowerPanelServerView extends FrameView {
-    
+
     Configuration config = new Configuration();
     SwingWorker worker;
     DatagramSocket serverSocket;
@@ -35,7 +37,6 @@ public final class PowerPanelServerView extends FrameView {
     String capitalizedSentence;
     String sentence;
     Commands commander;
-
     ActionListener startListener = new ActionListener() {
 
         public void actionPerformed(ActionEvent event) {
@@ -92,11 +93,14 @@ public final class PowerPanelServerView extends FrameView {
 
         initComponents();
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
+        ResourceMap resourceMap = getResourceMap();
+        Image icon = Toolkit.getDefaultToolkit().getImage("icon_small.png");
+        mainFrame.setIconImage(icon);
         commander = new Commands(mainFrame);
         if (!config.checkForConfigFile()) {
             showInstructions();
         }
-        
+
         System.out.print(config.getOS());
 
         jButton2.addActionListener(interruptListener);
@@ -105,7 +109,6 @@ public final class PowerPanelServerView extends FrameView {
 
         jButton2.setVisible(false);
 
-        ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
         messageTimer = new Timer(messageTimeout, new ActionListener() {
 
