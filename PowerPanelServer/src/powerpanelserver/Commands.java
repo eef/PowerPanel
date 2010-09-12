@@ -19,9 +19,13 @@ public class Commands extends Utils {
     private static int confirm;
     private static Configuration config = new Configuration();
     private static String pairAnswer;
+    private static String command;
+    private static Process child;
+    private static String seconds;
 
     public Commands(JFrame frame) {
         mainFrame = frame;
+        config.loadConfig();
     }
 
     public enum Command {
@@ -32,8 +36,12 @@ public class Commands extends Utils {
             @Override
             public Map execute(String option) {
                 try {
-                    String command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
-                    Process child = Runtime.getRuntime().exec(command);
+                    if(config.getOS().equals("windows")) {
+                      command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
+                    } else if (config.getOS().equals("linux")) {
+                      command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Hibernate";
+                    }
+                    child = Runtime.getRuntime().exec(command);
                     response = "Hiberating";
                     status = "Hibernating";
                 } catch (IOException ex) {
@@ -51,8 +59,8 @@ public class Commands extends Utils {
             @Override
             public Map execute(String option) {
                 try {
-                    String command = System.getenv("WINDIR") + "\\System32\\rundll32.exe user32.dll,LockWorkStation";
-                    Process child = Runtime.getRuntime().exec(command);
+                    command = System.getenv("WINDIR") + "\\System32\\rundll32.exe user32.dll,LockWorkStation";
+                    child = Runtime.getRuntime().exec(command);
                     response = "Computer locked";
                     status = "Computer Locked";
                 } catch (IOException ex) {
@@ -69,9 +77,13 @@ public class Commands extends Utils {
             @Override
             public Map execute(String option) {
                 try {
-                    String seconds = formatSeconds(Integer.parseInt(option));
-                    System.out.print(option);
-                    Process child = Runtime.getRuntime().exec("shutdown -s -t " + option);
+                    seconds = formatSeconds(Integer.parseInt(option));
+                    if(config.getOS().equals("windows")) {
+                      command = "shutdown -s -t " + option;
+                    } else if (config.getOS().equals("linux")) {
+                      command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Shutdown";
+                    }
+                    child = Runtime.getRuntime().exec(command);
                     response = "Shutdown in " + seconds;
                     status = "Shutdown in " + seconds;
                 } catch (IOException ex) {
@@ -95,12 +107,17 @@ public class Commands extends Utils {
                 return ret;
             }
         },
-        RESTART() {
+        REBOOT() {
 
             @Override
             public Map execute(String option) {
                 try {
-                    Process child = Runtime.getRuntime().exec("shutdown -r");
+                    if(config.getOS().equals("windows")) {
+                      command = "shutdown -r";
+                    } else if (config.getOS().equals("linux")) {
+                      command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Reboot";
+                    }
+                    child = Runtime.getRuntime().exec(command);
                     response = "Restarting";
                     status = "Restarting";
                 } catch (IOException ex) {
@@ -118,7 +135,7 @@ public class Commands extends Utils {
             @Override
             public Map execute(String option) {
                 try {
-                    Process child = Runtime.getRuntime().exec("shutdown -a");
+                    child = Runtime.getRuntime().exec("shutdown -a");
                     response = "Shutdown canceled";
                     status = "Shutdown canceled";
                 } catch (IOException ex) {
@@ -137,7 +154,7 @@ public class Commands extends Utils {
             @Override
             public Map execute(String option) {
                 try {
-                    Process child = Runtime.getRuntime().exec("shutdown -a");
+                    child = Runtime.getRuntime().exec("shutdown -a");
                     response = "Shutdown canceled";
                     status = "Shutdown canceled";
                 } catch (IOException ex) {
