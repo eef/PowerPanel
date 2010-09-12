@@ -94,8 +94,7 @@ public final class PowerPanelServerView extends FrameView {
         initComponents();
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
         ResourceMap resourceMap = getResourceMap();
-        Image icon = Toolkit.getDefaultToolkit().getImage("icon_small.png");
-        mainFrame.setIconImage(icon);
+        
         commander = new Commands(mainFrame);
         if (!config.checkForConfigFile()) {
             showInstructions();

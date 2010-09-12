@@ -156,40 +156,38 @@ public class Configuration {
             return jsonObject.getString("hostName");
         } catch (JSONException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-            return "No Mac Address";
+            return "No Hostname";
         }
     }
 
     public String getOsInfo() {
         try {
-            return jsonObject.getString("hostName");
+            return jsonObject.getString("osInfo");
         } catch (JSONException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-            return "No Mac Address";
+            return "No OS info";
         }
     }
 
     public String getOS() {
-        if (isWindows()) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             return "windows";
-        } else if (isMac()) {
-            return "mac";
-        } else if (isLinux()) {
+        } else if (SystemUtils.IS_OS_MAC_OSX) {
+            return "macosx";
+        } else if (SystemUtils.IS_OS_LINUX) {
             return "linux";
+        } else if (SystemUtils.IS_OS_OS2){
+            return "os2";
+        } else if (SystemUtils.IS_OS_SOLARIS) {
+            return "solaris";
+        } else if (SystemUtils.IS_OS_SUN_OS) {
+            return "sunos";
+        } else if (SystemUtils.IS_OS_UNIX) {
+            return "unix";
+        } else if (SystemUtils.IS_OS_MAC) {
+            return "mac";
         } else {
             return "unknown";
         }
-    }
-
-    private boolean isWindows() {
-        return (SystemUtils.IS_OS_WINDOWS);
-    }
-
-    private boolean isMac() {
-        return (SystemUtils.IS_OS_MAC_OSX);
-    }
-
-    private boolean isLinux() {
-        return (SystemUtils.IS_OS_LINUX);
     }
 }
