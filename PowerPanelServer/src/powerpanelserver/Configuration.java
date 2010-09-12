@@ -19,12 +19,27 @@ import org.apache.commons.lang.SystemUtils;
 
 public class Configuration {
 
-    private String appDataPath = System.getenv("APPDATA");
-    private String powerPanelSettingsPath = appDataPath + "\\wellbaked\\powerpanel\\";
+    private String appDataPath;
+    private String powerPanelSettingsPath;
     private String jsonString;
-    private JSONObject jsonObject;
+    public JSONObject jsonObject;
 
     public Configuration() {
+        setSettingsPath();
+    }
+
+    private void setSettingsPath() {
+        if (getOS().equals("windows")) {
+            appDataPath = System.getenv("APPDATA");
+            powerPanelSettingsPath = appDataPath + "\\wellbaked\\powerpanel\\";
+        } else if (getOS().equals("linux")) {
+          appDataPath = System.getenv("HOME");
+          powerPanelSettingsPath = appDataPath + "/.wellbaked/powerpanel/";
+        }
+    }
+
+    public void loadConfig() {
+        System.out.print("Loading config: " + powerPanelSettingsPath);
         FileInputStream configFileInput = null;
         DataInputStream dis = null;
         try {
@@ -34,6 +49,11 @@ public class Configuration {
             String strLine;
             jsonString = br.readLine();
             makeJSON(jsonString);
+      try {
+        System.out.print("\n\n\n\n"+jsonObject.getString("privateKey"));
+      } catch (JSONException ex) {
+        Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+      }
         } catch (IOException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -43,12 +63,13 @@ public class Configuration {
                 Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
     }
 
     private void makeJSON(String jsonString) {
         try {
             jsonObject = (JSONObject) new JSONTokener(jsonString).nextValue();
+            System.out.print(jsonObject.names());
+            System.out.print(jsonObject.getString("privateKey"));
         } catch (JSONException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -135,6 +156,7 @@ public class Configuration {
 
     public String getPrivateKey() {
         try {
+            System.out.print(jsonObject.getString("privateKey"));
             return jsonObject.getString("privateKey");
         } catch (JSONException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
@@ -176,7 +198,7 @@ public class Configuration {
             return "macosx";
         } else if (SystemUtils.IS_OS_LINUX) {
             return "linux";
-        } else if (SystemUtils.IS_OS_OS2){
+        } else if (SystemUtils.IS_OS_OS2) {
             return "os2";
         } else if (SystemUtils.IS_OS_SOLARIS) {
             return "solaris";
