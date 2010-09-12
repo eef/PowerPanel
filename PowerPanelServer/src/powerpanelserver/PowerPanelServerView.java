@@ -34,6 +34,7 @@ public final class PowerPanelServerView extends FrameView {
     byte[] sendData = new byte[1024];
     InetAddress IPAddress;
     int port;
+    int test;
     String capitalizedSentence;
     String sentence;
     Commands commander;
@@ -95,12 +96,12 @@ public final class PowerPanelServerView extends FrameView {
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
         ResourceMap resourceMap = getResourceMap();
         
-        commander = new Commands(mainFrame);
         if (!config.checkForConfigFile()) {
             showInstructions();
         }
+        config.loadConfig();
 
-        System.out.print(config.getOS());
+        commander = new Commands(mainFrame);
 
         jButton2.addActionListener(interruptListener);
 
