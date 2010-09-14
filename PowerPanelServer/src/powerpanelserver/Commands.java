@@ -35,11 +35,12 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 try {
-                    if(config.getOS().equals("windows")) {
-                      command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
+                    if (config.getOS().equals("windows")) {
+                        command = System.getenv("WINDIR") + "\\system32\\rundll32.exe powrprof.dll,SetSuspendState Hibernate";
                     } else if (config.getOS().equals("linux")) {
-                      command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Hibernate";
+                        command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Hibernate";
                     }
                     child = Runtime.getRuntime().exec(command);
                     response = "Hiberating";
@@ -58,6 +59,7 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 try {
                     command = System.getenv("WINDIR") + "\\System32\\rundll32.exe user32.dll,LockWorkStation";
                     child = Runtime.getRuntime().exec(command);
@@ -74,18 +76,39 @@ public class Commands extends Utils {
             }
         },
         SHUTDOWN() {
+
             @Override
             public Map execute(String option) {
+                ret.clear();
                 try {
                     seconds = formatSeconds(Integer.parseInt(option));
-                    if(config.getOS().equals("windows")) {
-                      command = "shutdown -s -t " + option;
-                    } else if (config.getOS().equals("linux")) {
-                      command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Shutdown";
-                    }
-                    child = Runtime.getRuntime().exec(command);
                     response = "Shutdown in " + seconds;
                     status = "Shutdown in " + seconds;
+                } catch (Exception ex) {
+                    response = "Shutdown command failed";
+                    status = "Shutdown command failed";
+                    Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                ret.put("shutdown", option);
+                ret.put("status", status);
+                ret.put("response", response);
+                return ret;
+            }
+        },
+        ACTUAL_SHUTDOWN() {
+
+            @Override
+            public Map execute(String option) {
+                ret.clear();
+                try {
+                    if (config.getOS().equals("windows")) {
+                        command = "shutdown -s";
+                    } else if (config.getOS().equals("linux")) {
+                        command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Shutdown";
+                    }
+                    child = Runtime.getRuntime().exec(command);
+                    response = "Shutting down";
+                    status = "Shutdown down";
                 } catch (IOException ex) {
                     response = "Shutdown command failed";
                     status = "Shutdown command failed";
@@ -100,6 +123,7 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 response = config.getPrivateKey();
                 status = "Hello command executed";
                 ret.put("status", status);
@@ -111,11 +135,12 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 try {
-                    if(config.getOS().equals("windows")) {
-                      command = "shutdown -r";
+                    if (config.getOS().equals("windows")) {
+                        command = "shutdown -r";
                     } else if (config.getOS().equals("linux")) {
-                      command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Reboot";
+                        command = "dbus-send --print-reply --system --dest=org.freedesktop.Hal /org/freedesktop/Hal/devices/computer org.freedesktop.Hal.Device.SystemPowerManagement.Reboot";
                     }
                     child = Runtime.getRuntime().exec(command);
                     response = "Restarting";
@@ -134,25 +159,26 @@ public class Commands extends Utils {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 try {
-                    child = Runtime.getRuntime().exec("shutdown -a");
                     response = "Shutdown canceled";
                     status = "Shutdown canceled";
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     response = "Shutdown cancel failed";
                     status = "Shutdown cancel failed";
                     Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                ret.put("cancelShutdown", "yes");
                 ret.put("status", status);
                 ret.put("response", response);
                 return ret;
             }
         },
-
         INFO() {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 try {
                     child = Runtime.getRuntime().exec("shutdown -a");
                     response = "Shutdown canceled";
@@ -167,11 +193,11 @@ public class Commands extends Utils {
                 return ret;
             }
         },
-
         PAIR() {
 
             @Override
             public Map execute(String option) {
+                ret.clear();
                 confirm = JOptionPane.showConfirmDialog(null, "Would you like to pair?");
                 if (confirm == 0) {
                     status = "Pair successful";

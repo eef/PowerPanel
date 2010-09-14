@@ -22,7 +22,7 @@ public class Configuration {
     private String appDataPath;
     private String powerPanelSettingsPath;
     private String jsonString;
-    public JSONObject jsonObject;
+    private JSONObject jsonObject;
 
     public Configuration() {
         setSettingsPath();

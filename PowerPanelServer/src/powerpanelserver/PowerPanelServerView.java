@@ -1,8 +1,6 @@
 package powerpanelserver;
 
 import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.SocketException;
 import org.jdesktop.application.Action;
@@ -21,6 +19,7 @@ import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 public final class PowerPanelServerView extends FrameView {
@@ -37,7 +36,13 @@ public final class PowerPanelServerView extends FrameView {
     int test;
     String capitalizedSentence;
     String sentence;
-    Commands commander;
+    static Commands commander;
+    public static volatile boolean stopRequested;
+    public static Thread runThread;
+    public static Thread t;
+    public static AlternateStop as;
+    public static int shutdownTime;
+    
     ActionListener startListener = new ActionListener() {
 
         public void actionPerformed(ActionEvent event) {
@@ -95,7 +100,7 @@ public final class PowerPanelServerView extends FrameView {
         initComponents();
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
         ResourceMap resourceMap = getResourceMap();
-        
+
         if (!config.checkForConfigFile()) {
             showInstructions();
         }
@@ -184,6 +189,13 @@ public final class PowerPanelServerView extends FrameView {
         public void run() {
             try {
                 Map<String, String> ret = commander.runCommand(this.command);
+                if (ret.containsKey("shutdown")) {
+                    shutdownTime = Integer.parseInt(ret.get("shutdown"));
+                    startCounter();
+                }
+                if (ret.containsKey("cancelShutdown")) {
+                    as.stopRequest();
+                }
                 capitalizedSentence = sentence.toUpperCase();
                 sendData = ret.get("response").getBytes();
                 sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
@@ -198,6 +210,62 @@ public final class PowerPanelServerView extends FrameView {
         }
     }
 
+    public static class AlternateStop extends Object implements Runnable {
+
+        private volatile boolean stopRequested;
+        private Thread runThread;
+
+        public void run() {
+            runThread = Thread.currentThread();
+            stopRequested = false;
+
+            while (!stopRequested) {
+                for (int i = shutdownTime; i >= 0; i = i - 1) {
+                    try {
+                        updateGUI(i);
+                        Thread.sleep(1000);
+                        if(i == 0) {
+                            commander.runCommand("ACTUAL_SHUTDOWN:0");
+                            stopRequest();
+                        }
+                    } catch (InterruptedException x) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+
+        public void stopRequest() {
+            stopRequested = true;
+            if (runThread != null) {
+                runThread.interrupt();
+            }
+        }
+    }
+    
+    public static void startCounter() {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                as = new AlternateStop();
+                t = new Thread(as);
+                t.start();
+            }
+        });
+    }
+
+
+    private static void updateGUI(final int i) {
+        SwingUtilities.invokeLater(
+                new Runnable() {
+
+                    public void run() {
+
+                        countdownLabel.setText("Computer will shutdown in " + Utils.formatSeconds(i));
+                    }
+                });
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -205,6 +273,7 @@ public final class PowerPanelServerView extends FrameView {
         mainPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        countdownLabel = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
@@ -230,15 +299,21 @@ public final class PowerPanelServerView extends FrameView {
         jButton2.setToolTipText(resourceMap.getString("jButton2.toolTipText")); // NOI18N
         jButton2.setName("jButton2"); // NOI18N
 
+        countdownLabel.setText(resourceMap.getString("countdownLabel.text")); // NOI18N
+        countdownLabel.setName("countdownLabel"); // NOI18N
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton2))
+                    .addComponent(countdownLabel))
                 .addContainerGap(322, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
@@ -248,7 +323,9 @@ public final class PowerPanelServerView extends FrameView {
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addGap(230, 230, 230))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(countdownLabel)
+                .addGap(205, 205, 205))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -321,6 +398,7 @@ public final class PowerPanelServerView extends FrameView {
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public static javax.swing.JLabel countdownLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JMenuItem jMenuItem1;
