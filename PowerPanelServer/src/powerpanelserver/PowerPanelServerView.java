@@ -1,5 +1,6 @@
 package powerpanelserver;
 
+import java.awt.AWTException;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.SocketException;
@@ -21,6 +22,16 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.net.URL;
+import javax.swing.ImageIcon;
 
 public final class PowerPanelServerView extends FrameView {
 
@@ -42,7 +53,6 @@ public final class PowerPanelServerView extends FrameView {
     public static Thread t;
     public static AlternateStop as;
     public static int shutdownTime;
-    
     ActionListener startListener = new ActionListener() {
 
         public void actionPerformed(ActionEvent event) {
@@ -98,8 +108,12 @@ public final class PowerPanelServerView extends FrameView {
         super(app);
 
         initComponents();
+
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
         ResourceMap resourceMap = getResourceMap();
+
+
+
 
         if (!config.checkForConfigFile()) {
             showInstructions();
@@ -136,7 +150,9 @@ public final class PowerPanelServerView extends FrameView {
         idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
         statusAnimationLabel.setIcon(idleIcon);
         progressBar.setVisible(false);
-
+        if (showTaskBarIcon()) {
+            //yay
+        }
     }
 
     @Action
@@ -210,6 +226,80 @@ public final class PowerPanelServerView extends FrameView {
         }
     }
 
+    public boolean showTaskBarIcon() {
+        final TrayIcon trayIcon;
+
+        if (SystemTray.isSupported()) {
+
+            SystemTray tray = SystemTray.getSystemTray();
+            URL url = getClass().getResource("resources/icon_small.png");
+            ImageIcon imageIcon = new ImageIcon(url);
+            Image image = imageIcon.getImage();
+
+            MouseListener mouseListener = new MouseListener() {
+
+                public void mouseClicked(MouseEvent e) {
+                    //Tray Icon - Mouse clicked
+                }
+
+                public void mouseEntered(MouseEvent e) {
+                    //Tray Icon - Mouse entered!
+                }
+
+                public void mouseExited(MouseEvent e) {
+                    //Tray Icon - Mouse exited
+                }
+
+                public void mousePressed(MouseEvent e) {
+                    //Tray Icon - Mouse pressed
+                }
+
+                public void mouseReleased(MouseEvent e) {
+                    //Tray Icon - Mouse released
+                }
+            };
+
+            ActionListener exitListener = new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println("Exiting via task bar menu");
+                    System.exit(0);
+                }
+            };
+
+            PopupMenu popup = new PopupMenu();
+            MenuItem defaultItem = new MenuItem("Exit");
+            defaultItem.addActionListener(exitListener);
+            popup.add(defaultItem);
+
+            trayIcon = new TrayIcon(image, "Tray Demo", popup);
+
+            ActionListener actionListener = new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    trayIcon.displayMessage("Action Event",
+                            "An Action Event Has Been Performed!",
+                            TrayIcon.MessageType.INFO);
+                }
+            };
+
+            trayIcon.setImageAutoSize(true);
+            trayIcon.addActionListener(actionListener);
+            trayIcon.addMouseListener(mouseListener);
+
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e) {
+                System.err.println("TrayIcon could not be added.");
+            }
+
+        } else {
+            return false;
+            //  System Tray is not supported
+        }
+        return true;
+    }
+
     public static class AlternateStop extends Object implements Runnable {
 
         private volatile boolean stopRequested;
@@ -224,7 +314,7 @@ public final class PowerPanelServerView extends FrameView {
                     try {
                         updateGUI(i);
                         Thread.sleep(1000);
-                        if(i == 0) {
+                        if (i == 0) {
                             commander.runCommand("ACTUAL_SHUTDOWN:0");
                             stopRequest();
                         }
@@ -242,7 +332,7 @@ public final class PowerPanelServerView extends FrameView {
             }
         }
     }
-    
+
     public static void startCounter() {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
 
@@ -253,7 +343,6 @@ public final class PowerPanelServerView extends FrameView {
             }
         });
     }
-
 
     private static void updateGUI(final int i) {
         SwingUtilities.invokeLater(
