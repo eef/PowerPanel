@@ -1,6 +1,7 @@
 package powerpanelserver;
 
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.SocketException;
@@ -27,15 +28,16 @@ import java.awt.TrayIcon;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
+import java.util.logging.FileHandler;
 import javax.swing.ImageIcon;
 
 public final class PowerPanelServerView extends FrameView {
 
     Configuration config = new Configuration();
+    public Utils utils;
     SwingWorker worker;
     DatagramSocket serverSocket;
     JFrame mainFrame;
@@ -53,6 +55,11 @@ public final class PowerPanelServerView extends FrameView {
     public static Thread t;
     public static AlternateStop as;
     public static int shutdownTime;
+    public boolean SERVER_STATUS = false;
+    public boolean LOGGER_STATUS = false;
+    public MenuItem defaultItem;
+    public MenuItem startServer;
+    public static Logger logger;
     ActionListener startListener = new ActionListener() {
 
         public void actionPerformed(ActionEvent event) {
@@ -63,23 +70,29 @@ public final class PowerPanelServerView extends FrameView {
 
                 public Object doInBackground() {
                     try {
+                        logIt("Server starting", 1);
                         serverSocket = new DatagramSocket(2501);
-                        System.out.println("STARTED");
+                        SERVER_STATUS = true;
+                        startServer.setLabel("Stop Server");
                         while (true) {
                             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                             serverSocket.receive(receivePacket);
                             sentence = new String(receivePacket.getData());
-                            System.out.println("RECEIVED: " + sentence);
+                            logIt("COMMAND RECEIVED: "  + sentence, 1);
                             IPAddress = receivePacket.getAddress();
                             port = receivePacket.getPort();
                             EventQueue.invokeLater(new runCommand(sentence));
                             statusAnimationLabel.setIcon(busyIcons[0]);
                         }
                     } catch (SocketException ex) {
+                        logIt(ex.getMessage(), 3);
                         statusMessageLabel.setText("Server: Offline");
+                        SERVER_STATUS = false;
                         return "";
                     } catch (IOException io) {
+                        logIt(io.getMessage(), 3);
                         statusMessageLabel.setText("Server: Offline");
+                        SERVER_STATUS = false;
                         return "Interrupted";
                     }
                 }
@@ -88,7 +101,9 @@ public final class PowerPanelServerView extends FrameView {
                 public void done() {
                     worker.cancel(true);
                     serverSocket.close();
+                    SERVER_STATUS = false;
                     statusMessageLabel.setText("Server: Offline");
+                    logIt("Server stopped", 1);
                 }
             };
 
@@ -101,26 +116,33 @@ public final class PowerPanelServerView extends FrameView {
             jButton2.setVisible(false);
             worker.cancel(true);
             jButton1.setVisible(true);
+            startServer.setLabel("Start Server");
+            logIt("Firing stop server", 1);
         }
     };
 
     public PowerPanelServerView(SingleFrameApplication app) {
         super(app);
-
+        utils = new Utils();
         initComponents();
 
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
         ResourceMap resourceMap = getResourceMap();
 
-
-
-
         if (!config.checkForConfigFile()) {
             showInstructions();
         }
+
+        if (!setUpLogger()) {
+        }
+
         config.loadConfig();
+        logIt("App started - Config loaded", 1);
+        setConfigMenuColor();
 
         commander = new Commands(mainFrame);
+
+        logIt("Commander Loaded", 1);
 
         jButton2.addActionListener(interruptListener);
 
@@ -130,7 +152,6 @@ public final class PowerPanelServerView extends FrameView {
 
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
         messageTimer = new Timer(messageTimeout, new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 statusMessageLabel.setText("");
             }
@@ -151,7 +172,50 @@ public final class PowerPanelServerView extends FrameView {
         statusAnimationLabel.setIcon(idleIcon);
         progressBar.setVisible(false);
         if (showTaskBarIcon()) {
-            //yay
+            logIt("System Loaded", 1);
+        }
+    }
+
+    public void logIt(String message, int level) {
+        if (config.logging()) {
+            switch (level) {
+                case 1:
+                    logger.info(message);
+                    break;
+                case 2:
+                    logger.warning(message);
+                    break;
+                case 3:
+                    logger.severe(message);
+                    break;
+            }
+        }
+    }
+
+    public void setConfigMenuColor() {
+        if (config.logging()) {
+            logIt("Logging is turned on", 1);
+            LOGGER_STATUS = true;
+            loggingMenuItem.setText("Logging (on)");
+            loggingMenuItem.setForeground(Color.green);
+        } else {
+            logIt("Logging is turned off", 1);
+            LOGGER_STATUS = false;
+            loggingMenuItem.setText("Logging (off)");
+            loggingMenuItem.setForeground(Color.red);
+        }
+    }
+
+    public boolean setUpLogger() {
+        try {
+            boolean append = true;
+            FileHandler handler = new FileHandler(config.getSettingsPath() + "powerpanel_log.xml", append);
+            logger = Logger.getLogger("powerpanel");
+            logger.addHandler(handler);
+            return true;
+        } catch (IOException e) {
+            Logger.getLogger(PowerPanelServerView.class.getName()).log(Level.SEVERE, null, e);
+            return false;
         }
     }
 
@@ -163,6 +227,20 @@ public final class PowerPanelServerView extends FrameView {
             aboutBox.setLocationRelativeTo(mainFrame);
         }
         PowerPanelServerApp.getApplication().show(aboutBox);
+        logIt("about box opened", 1);
+    }
+
+    @Action
+    public void setLogging() {
+        if (LOGGER_STATUS) {
+            logIt("turning off logging", 1);
+            config.toggleLogging(false);
+        } else if (!LOGGER_STATUS) {
+            config.toggleLogging(true);
+            logIt("logging turned on", 1);
+        }
+        config.loadConfig();
+        setConfigMenuColor();
     }
 
     @Action
@@ -171,6 +249,7 @@ public final class PowerPanelServerView extends FrameView {
             mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
             instructionsBox = new Instructions(mainFrame, true);
             instructionsBox.setLocationRelativeTo(mainFrame);
+            logIt("instructions opened", 1);
         }
         PowerPanelServerApp.getApplication().show(instructionsBox);
     }
@@ -267,10 +346,24 @@ public final class PowerPanelServerView extends FrameView {
                 }
             };
 
+            ActionListener trayServerToggle = new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    if (SERVER_STATUS) {
+                        jButton2.doClick();
+                    } else if (!SERVER_STATUS) {
+                        jButton1.doClick();
+                    }
+                }
+            };
+
             PopupMenu popup = new PopupMenu();
-            MenuItem defaultItem = new MenuItem("Exit");
+            defaultItem = new MenuItem("Exit");
+            startServer = new MenuItem("Start Server");
             defaultItem.addActionListener(exitListener);
+            startServer.addActionListener(trayServerToggle);
             popup.add(defaultItem);
+            popup.add(startServer);
 
             trayIcon = new TrayIcon(image, "Tray Demo", popup);
 
@@ -369,6 +462,7 @@ public final class PowerPanelServerView extends FrameView {
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
+        loggingMenuItem = new javax.swing.JMenuItem();
         statusPanel = new javax.swing.JPanel();
         javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
         statusMessageLabel = new javax.swing.JLabel();
@@ -443,6 +537,11 @@ public final class PowerPanelServerView extends FrameView {
         jMenuItem1.setName("jMenuItem1"); // NOI18N
         helpMenu.add(jMenuItem1);
 
+        loggingMenuItem.setAction(actionMap.get("setLogging")); // NOI18N
+        loggingMenuItem.setText(resourceMap.getString("loggingMenuItem.text")); // NOI18N
+        loggingMenuItem.setName("loggingMenuItem"); // NOI18N
+        helpMenu.add(loggingMenuItem);
+
         menuBar.add(helpMenu);
 
         statusPanel.setName("statusPanel"); // NOI18N
@@ -491,6 +590,7 @@ public final class PowerPanelServerView extends FrameView {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem loggingMenuItem;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JProgressBar progressBar;

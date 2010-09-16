@@ -33,13 +33,12 @@ public class Configuration {
             appDataPath = System.getenv("APPDATA");
             powerPanelSettingsPath = appDataPath + "\\wellbaked\\powerpanel\\";
         } else if (getOS().equals("linux")) {
-          appDataPath = System.getenv("HOME");
-          powerPanelSettingsPath = appDataPath + "/.wellbaked/powerpanel/";
+            appDataPath = System.getenv("HOME");
+            powerPanelSettingsPath = appDataPath + "/.wellbaked/powerpanel/";
         }
     }
 
     public void loadConfig() {
-        System.out.print("Loading config: " + powerPanelSettingsPath);
         FileInputStream configFileInput = null;
         DataInputStream dis = null;
         try {
@@ -49,11 +48,6 @@ public class Configuration {
             String strLine;
             jsonString = br.readLine();
             makeJSON(jsonString);
-      try {
-        System.out.print("\n\n\n\n"+jsonObject.getString("privateKey"));
-      } catch (JSONException ex) {
-        Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-      }
         } catch (IOException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -68,10 +62,37 @@ public class Configuration {
     private void makeJSON(String jsonString) {
         try {
             jsonObject = (JSONObject) new JSONTokener(jsonString).nextValue();
-            System.out.print(jsonObject.names());
-            System.out.print(jsonObject.getString("privateKey"));
         } catch (JSONException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public boolean checkForLogFile() {
+        File file = new File(powerPanelSettingsPath);
+        boolean exists = file.exists();
+        if (!exists) {
+            boolean success = (file).mkdirs();
+            if (success) {
+                if (createLogFile(powerPanelSettingsPath)) {
+                    return false;
+                }
+            }
+        } else {
+            return true;
+        }
+        return true;
+    }
+
+    private boolean createLogFile(String path) {
+        try {
+            FileWriter fstream = new FileWriter(path + "powerpanel_log.xml");
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write("");
+            out.close();
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            return false;
         }
     }
 
@@ -80,10 +101,9 @@ public class Configuration {
         boolean exists = file.exists();
         if (!exists) {
             boolean success = (file).mkdirs();
-            System.out.println("the file or directory you are searching does not exist: " + exists);
             if (success) {
-                System.out.println("Directory: " + powerPanelSettingsPath + " created");
                 if (createConfigFile(powerPanelSettingsPath)) {
+                    createLogFile(powerPanelSettingsPath);
                     return false;
                 }
             }
@@ -145,7 +165,20 @@ public class Configuration {
         try {
             FileWriter fstream = new FileWriter(path + "config.cfg");
             BufferedWriter out = new BufferedWriter(fstream);
-            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "'}");
+            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "', 'logging':'false'}");
+            out.close();
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean toggleLogging(boolean logging) {
+        try {
+            FileWriter fstream = new FileWriter(powerPanelSettingsPath + "config.cfg");
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "', 'logging':" + Boolean.toString(logging) + "}");
             out.close();
             return true;
         } catch (Exception e) {
@@ -182,12 +215,25 @@ public class Configuration {
         }
     }
 
+    public String getSettingsPath() {
+        return powerPanelSettingsPath;
+    }
+
     public String getOsInfo() {
         try {
             return jsonObject.getString("osInfo");
         } catch (JSONException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
             return "No OS info";
+        }
+    }
+
+    public boolean logging() {
+        try {
+            return jsonObject.getBoolean("logging");
+        } catch (JSONException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
     }
 
