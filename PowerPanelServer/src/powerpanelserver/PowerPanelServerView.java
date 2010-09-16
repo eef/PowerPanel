@@ -180,13 +180,13 @@ public final class PowerPanelServerView extends FrameView {
         if (config.logging()) {
             switch (level) {
                 case 1:
-                    logger.info(message);
+                    logger.info(message.trim());
                     break;
                 case 2:
-                    logger.warning(message);
+                    logger.warning(message.trim());
                     break;
                 case 3:
-                    logger.severe(message);
+                    logger.severe(message.trim());
                     break;
             }
         }
