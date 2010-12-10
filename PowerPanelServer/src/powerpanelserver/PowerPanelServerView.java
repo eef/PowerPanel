@@ -127,12 +127,14 @@ public final class PowerPanelServerView extends FrameView {
         initComponents();
 
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
-        ResourceMap resourceMap = getResourceMap();
-
-        config.initaliseFiles();
-        if (!config.checkForConfigFile()) {
+        ResourceMap resourceMap = getResourceMap();        
+        if (config.firstTimeRun()) {
+            System.err.println("first time run/no config file detected" );
             showInstructions();
         }
+        config.initaliseFiles();
+
+        
 
         if (!setUpLogger()) {
         }
@@ -246,11 +248,12 @@ public final class PowerPanelServerView extends FrameView {
 
     @Action
     public void showInstructions() {
+        System.err.println("showinstrusctions" );
         if (instructionsBox == null) {
             mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
             instructionsBox = new Instructions(mainFrame, true);
             instructionsBox.setLocationRelativeTo(mainFrame);
-            logIt("instructions opened", 1);
+//            logIt("instructions opened", 1);
         }
         PowerPanelServerApp.getApplication().show(instructionsBox);
     }

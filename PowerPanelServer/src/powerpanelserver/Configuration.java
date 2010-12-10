@@ -93,11 +93,18 @@ public class Configuration {
                 success = true;
             }
         }
-
         return success;
     }
 
-    public boolean checkForSettingsFolder() {
+    public boolean firstTimeRun(){
+        boolean firsttimerun = true;
+        if (checkForConfigFile()){
+            firsttimerun = false;
+        }
+        return firsttimerun;
+    }
+
+    private boolean checkForSettingsFolder() {
         //returns true if the config folder exists false if not
         File file = new File(powerPanelSettingsPath);
         boolean exists = file.exists();
@@ -108,7 +115,7 @@ public class Configuration {
         }
    }
 
-    public boolean checkForLogFile() {
+    private boolean checkForLogFile() {
         //returns true if the config file exists false if not
         File file = new File(powerPanelSettingsPath + logFileName);
         boolean exists = file.exists();
@@ -119,7 +126,7 @@ public class Configuration {
         }
     }
 
-    public boolean checkForConfigFile() {
+    private boolean checkForConfigFile() {
         File file = new File(powerPanelSettingsPath + configFileName);
         boolean exists = file.exists();
         if (exists) {
