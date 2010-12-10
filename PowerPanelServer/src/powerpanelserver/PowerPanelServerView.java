@@ -129,6 +129,7 @@ public final class PowerPanelServerView extends FrameView {
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
         ResourceMap resourceMap = getResourceMap();
 
+        config.initaliseFiles();
         if (!config.checkForConfigFile()) {
             showInstructions();
         }
@@ -209,7 +210,7 @@ public final class PowerPanelServerView extends FrameView {
     public boolean setUpLogger() {
         try {
             boolean append = true;
-            FileHandler handler = new FileHandler(config.getSettingsPath() + "powerpanel_log.xml", append);
+            FileHandler handler = new FileHandler(config.getSettingsPath() + config.getConfigFileName(), append);
             logger = Logger.getLogger("powerpanel");
             logger.addHandler(handler);
             return true;

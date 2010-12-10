@@ -19,8 +19,12 @@ import org.apache.commons.lang.SystemUtils;
 
 public class Configuration {
 
+    //paths to settings and log files:
     private String appDataPath;
     private String powerPanelSettingsPath;
+    private String configFileName;
+    private String logFileName;
+
     private String jsonString;
     private JSONObject jsonObject;
 
@@ -36,18 +40,21 @@ public class Configuration {
             appDataPath = System.getenv("HOME");
             powerPanelSettingsPath = appDataPath + "/.wellbaked/powerpanel/";
         }
+        configFileName = "config.cfg";
+        logFileName = "powerpanel_log.xml";
     }
 
     public void loadConfig() {
         FileInputStream configFileInput = null;
         DataInputStream dis = null;
         try {
-            FileInputStream fstream = new FileInputStream(powerPanelSettingsPath + "config.cfg");
+            FileInputStream fstream = new FileInputStream(powerPanelSettingsPath + configFileName);
             dis = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(dis));
             String strLine;
             jsonString = br.readLine();
             makeJSON(jsonString);
+            dis.close();
         } catch (IOException ex) {
             Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -56,7 +63,7 @@ public class Configuration {
             } catch (IOException ex) {
                 Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        }        
     }
 
     private void makeJSON(String jsonString) {
@@ -67,25 +74,74 @@ public class Configuration {
         }
     }
 
-    public boolean checkForLogFile() {
-        File file = new File(powerPanelSettingsPath);
-        boolean exists = file.exists();
-        if (!exists) {
-            boolean success = (file).mkdirs();
-            if (success) {
-                if (createLogFile(powerPanelSettingsPath)) {
-                    return false;
-                }
+    public boolean initaliseFiles(){
+        boolean success = false;
+
+        if (!checkForSettingsFolder()){
+            if (createSettingsFolder()) {
+                success = true;
             }
-        } else {
-            return true;
         }
-        return true;
+        if (!checkForLogFile()){
+            if (createLogFile()) {
+                success = true;
+            }
+        }
+
+        if (!checkForConfigFile()){
+            if (createConfigFile()) {
+                success = true;
+            }
+        }
+
+        return success;
     }
 
-    private boolean createLogFile(String path) {
+    public boolean checkForSettingsFolder() {
+        //returns true if the config folder exists false if not
+        File file = new File(powerPanelSettingsPath);
+        boolean exists = file.exists();
+        if (exists) {
+            return true;
+        } else {
+            return false;
+        }
+   }
+
+    public boolean checkForLogFile() {
+        //returns true if the config file exists false if not
+        File file = new File(powerPanelSettingsPath + logFileName);
+        boolean exists = file.exists();
+        if (exists) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean checkForConfigFile() {
+        File file = new File(powerPanelSettingsPath + configFileName);
+        boolean exists = file.exists();
+        if (exists) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    private boolean createSettingsFolder() {
         try {
-            FileWriter fstream = new FileWriter(path + "powerpanel_log.xml");
+            File file = new File(powerPanelSettingsPath);
+            (file).mkdirs();
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean createLogFile() {
+        try {
+            FileWriter fstream = new FileWriter(powerPanelSettingsPath + logFileName);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("");
             out.close();
@@ -96,22 +152,17 @@ public class Configuration {
         }
     }
 
-    public boolean checkForConfigFile() {
-        File file = new File(powerPanelSettingsPath);
-        boolean exists = file.exists();
-        if (!exists) {
-            boolean success = (file).mkdirs();
-            if (success) {
-                if (createConfigFile(powerPanelSettingsPath)) {
-                    createLogFile(powerPanelSettingsPath);
-                    return false;
-                }
-            }
-        } else {
-            System.out.println("the file or directory exists: " + exists);
+    private boolean createConfigFile() {
+        try {
+            FileWriter fstream = new FileWriter(powerPanelSettingsPath + configFileName);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "', 'logging':'false'}");
+            out.close();
             return true;
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            return false;
         }
-        return true;
     }
 
     private static String macAddress() {
@@ -161,22 +212,10 @@ public class Configuration {
         return System.getProperty(nameOS) + " " + System.getProperty(versionOS);
     }
 
-    private boolean createConfigFile(String path) {
-        try {
-            FileWriter fstream = new FileWriter(path + "config.cfg");
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "', 'logging':'false'}");
-            out.close();
-            return true;
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            return false;
-        }
-    }
 
     public boolean toggleLogging(boolean logging) {
         try {
-            FileWriter fstream = new FileWriter(powerPanelSettingsPath + "config.cfg");
+            FileWriter fstream = new FileWriter(powerPanelSettingsPath + logFileName);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("{'privateKey':'" + generatePrivateKey() + "', 'macAddress':'" + macAddress() + "', 'hostName':'" + generateHostname() + "', 'osInfo':'" + generateOSInfo() + "', 'logging':" + Boolean.toString(logging) + "}");
             out.close();
@@ -217,6 +256,14 @@ public class Configuration {
 
     public String getSettingsPath() {
         return powerPanelSettingsPath;
+    }
+
+    public String getConfigFileName() {
+        return configFileName;
+    }
+
+    public String getLogFileName() {
+        return logFileName;
     }
 
     public String getOsInfo() {
