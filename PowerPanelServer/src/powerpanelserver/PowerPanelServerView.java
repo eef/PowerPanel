@@ -127,17 +127,20 @@ public final class PowerPanelServerView extends FrameView {
         initComponents();
 
         mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
-        ResourceMap resourceMap = getResourceMap();        
-        if (config.firstTimeRun()) {
-            System.err.println("first time run/no config file detected" );
-            showInstructions();
-        }
-        config.initaliseFiles();
-
+        ResourceMap resourceMap = getResourceMap();
         
-
-        if (!setUpLogger()) {
-        }
+        config.initaliseFiles();
+        config.loadConfig();
+        
+        if (config.firstTimeRun()) {            
+            System.err.println("first time run/no config file detected" );
+            if (!setUpLogger()) {
+                System.err.println("setUpLogger returned false" );
+            } else {
+                System.err.println("setUpLogger returned true" );
+            }
+            showInstructions();
+        }        
 
         config.loadConfig();
         logIt("App started - Config loaded", 1);
@@ -212,7 +215,7 @@ public final class PowerPanelServerView extends FrameView {
     public boolean setUpLogger() {
         try {
             boolean append = true;
-            FileHandler handler = new FileHandler(config.getSettingsPath() + config.getConfigFileName(), append);
+            FileHandler handler = new FileHandler(config.getSettingsPath() + config.getLogFileName(), append);
             logger = Logger.getLogger("powerpanel");
             logger.addHandler(handler);
             return true;
@@ -253,7 +256,7 @@ public final class PowerPanelServerView extends FrameView {
             mainFrame = PowerPanelServerApp.getApplication().getMainFrame();
             instructionsBox = new Instructions(mainFrame, true);
             instructionsBox.setLocationRelativeTo(mainFrame);
-//            logIt("instructions opened", 1);
+            logIt("instructions opened", 1);
         }
         PowerPanelServerApp.getApplication().show(instructionsBox);
     }

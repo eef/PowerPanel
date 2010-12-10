@@ -25,6 +25,8 @@ public class Configuration {
     private String configFileName;
     private String logFileName;
 
+    private boolean firsttimerun;
+
     private String jsonString;
     private JSONObject jsonObject;
 
@@ -78,6 +80,7 @@ public class Configuration {
         boolean success = false;
 
         if (!checkForSettingsFolder()){
+            firsttimerun = true;
             if (createSettingsFolder()) {
                 success = true;
             }
@@ -89,6 +92,7 @@ public class Configuration {
         }
 
         if (!checkForConfigFile()){
+            firsttimerun = true;
             if (createConfigFile()) {
                 success = true;
             }
@@ -97,10 +101,6 @@ public class Configuration {
     }
 
     public boolean firstTimeRun(){
-        boolean firsttimerun = true;
-        if (checkForConfigFile()){
-            firsttimerun = false;
-        }
         return firsttimerun;
     }
 
